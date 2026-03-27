@@ -61,7 +61,7 @@ def create_pdf(products, output_file):
 
         c.rect(x, y, label_width - 2*mm, label_height - 2*mm, stroke=1)
 
-        barcode = code128.Code128(item_code, barWidth=1.8, barHeight=12*mm)
+        barcode = code128.Code128(item_code, barWidth=1.4, barHeight=12*mm)
         barcode_width = barcode.width
         barcode_height = barcode.height
 
