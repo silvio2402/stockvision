@@ -1,27 +1,49 @@
 import React from "react";
 import { BoundingBox } from "../../types";
 
+const GEMINI_COORD_SPACE = 1000;
+
 interface BoundingBoxOverlayProps {
   boundingBoxes: Array<{
     bbox: BoundingBox;
     label: string;
     status?: "in_stock" | "running_out" | "unknown";
   }>;
-  imageWidth: number;
-  imageHeight: number;
+  imageNaturalWidth: number;
+  imageNaturalHeight: number;
   containerWidth: number;
   containerHeight: number;
 }
 
 export function BoundingBoxOverlay({
   boundingBoxes,
-  imageWidth,
-  imageHeight,
+  imageNaturalWidth,
+  imageNaturalHeight,
   containerWidth,
   containerHeight,
 }: BoundingBoxOverlayProps) {
-  const scaleX = containerWidth / imageWidth;
-  const scaleY = containerHeight / imageHeight;
+  const imageAspect = imageNaturalWidth / imageNaturalHeight;
+  const containerAspect = containerWidth / containerHeight;
+
+  let renderedW: number;
+  let renderedH: number;
+  let offsetX: number;
+  let offsetY: number;
+
+  if (imageAspect > containerAspect) {
+    renderedW = containerWidth;
+    renderedH = containerWidth / imageAspect;
+    offsetX = 0;
+    offsetY = (containerHeight - renderedH) / 2;
+  } else {
+    renderedH = containerHeight;
+    renderedW = containerHeight * imageAspect;
+    offsetX = (containerWidth - renderedW) / 2;
+    offsetY = 0;
+  }
+
+  const scaleX = renderedW / GEMINI_COORD_SPACE;
+  const scaleY = renderedH / GEMINI_COORD_SPACE;
 
   return (
     <svg
@@ -31,8 +53,8 @@ export function BoundingBoxOverlay({
     >
       {boundingBoxes.map((item, index) => {
         const { bbox, label, status } = item;
-        const x = bbox.x * scaleX;
-        const y = bbox.y * scaleY;
+        const x = offsetX + bbox.x * scaleX;
+        const y = offsetY + bbox.y * scaleY;
         const w = bbox.width * scaleX;
         const h = bbox.height * scaleY;
 

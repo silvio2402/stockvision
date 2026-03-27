@@ -7,6 +7,7 @@ import { BoundingBoxOverlay } from "./BoundingBoxOverlay";
 export function ImageViewer() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [imageNaturalSize, setImageNaturalSize] = useState({ width: 0, height: 0 });
   const { data: detection, isLoading, error } = useLatestDetection();
 
   useEffect(() => {
@@ -66,7 +67,9 @@ export function ImageViewer() {
           src={imageUrl}
           alt="Shelf detection"
           className="w-full h-full object-contain"
-          onLoad={() => {
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
             if (containerRef.current) {
               setContainerSize({
                 width: containerRef.current.clientWidth,
@@ -76,11 +79,11 @@ export function ImageViewer() {
           }}
         />
         
-        {detection.products.length > 0 && (
+        {detection.products.length > 0 && imageNaturalSize.width > 0 && (
           <BoundingBoxOverlay
             boundingBoxes={boxes}
-            imageWidth={1920}
-            imageHeight={1080}
+            imageNaturalWidth={imageNaturalSize.width}
+            imageNaturalHeight={imageNaturalSize.height}
             containerWidth={containerSize.width}
             containerHeight={containerSize.height}
           />
