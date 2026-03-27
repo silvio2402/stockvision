@@ -5,10 +5,10 @@ from pydantic import BaseModel, Field
 
 
 class BoundingBox(BaseModel):
-    x: int
-    y: int
-    width: int
-    height: int
+    x: float
+    y: float
+    width: float
+    height: float
 
 
 class ProductData(BaseModel):
