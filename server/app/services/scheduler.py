@@ -13,10 +13,7 @@ scheduler = BackgroundScheduler()
 
 def scan_job():
     import asyncio
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    loop.run_until_complete(run_periodic_scan())
+    asyncio.run(run_periodic_scan())
 
 
 async def run_periodic_scan():
@@ -26,10 +23,7 @@ async def run_periodic_scan():
 
 def order_check_job():
     import asyncio
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    loop.run_until_complete(run_periodic_order_check())
+    asyncio.run(run_periodic_order_check())
 
 
 async def run_periodic_order_check():
