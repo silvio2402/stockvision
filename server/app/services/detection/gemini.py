@@ -9,7 +9,8 @@ async def detect_barcodes(image_path: str) -> list[dict]:
 
     prompt = '''Analyze this image of a warehouse shelf. Detect ALL visible barcodes in the image.
 
-For each barcode found, return its bounding box as pixel coordinates relative to the full image.
+For each barcode found, return only the bounding box coordinates.
+DO NOT try to decode the barcode text - I will handle that separately.
 
 Return ONLY valid JSON in this exact format:
 {
@@ -22,7 +23,7 @@ Return ONLY valid JSON in this exact format:
 
 If no barcodes are found, return: {"barcodes": []}'''
 
-    await ws_manager.broadcast("scan_progress", {"step": "barcode_detection", "detail": "Detecting barcodes with Gemini"})
+    await ws_manager.broadcast("scan_progress", {"step": "barcode_detection", "detail": "Detecting barcode bounding boxes with Gemini"})
 
     with open(image_path, "rb") as f:
         image_data = f.read()
