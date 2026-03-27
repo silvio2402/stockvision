@@ -1,13 +1,21 @@
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
 
+class GeminiModels(BaseModel):
+    barcode_detection: str = "models/gemini-2.5-flash"
+    product_area_detection: str = "models/gemini-2.5-flash"
+    stock_evaluation: str = "models/gemini-2.5-flash"
+
+
 class Settings(BaseSettings):
+    # Gemini
+    gemini_api_key: str = ""
+    gemini_models: GeminiModels = GeminiModels()
+
     # MongoDB
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_database: str = "stockvision"
-
-    # Gemini
-    gemini_api_key: str = ""
 
     # ERP (Make.com webhooks)
     erp_product_url: str = "https://hook.eu1.make.celonis.com/79j69cp1aesv98zwozwgpduz86hk71rr"
