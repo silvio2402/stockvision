@@ -59,7 +59,7 @@ def create_pdf(products, output_file):
 
         c.rect(x, y, label_width - 2*mm, label_height - 2*mm, stroke=1)
 
-        barcode = code128.Code128(item_code, barWidth=0.5, barHeight=15*mm)
+        barcode = code128.Code128(item_code, barWidth=1.0, barHeight=15*mm)
         barcode_width = barcode.width
         barcode_height = barcode.height
 
@@ -70,7 +70,7 @@ def create_pdf(products, output_file):
 
         c.setFillColorRGB(0, 0, 0)
         c.setFont("Helvetica-Bold", 10)
-        c.drawCentredString(x + label_width / 2, y + 8*mm, f"Barcode: {item_code}")
+        c.drawCentredString(x + label_width / 2, y + 8*mm, item_code)
 
         c.setFont("Helvetica", 8)
         name_y = y + 3*mm
