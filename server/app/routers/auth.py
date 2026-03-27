@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
 from ..dependencies import (
     get_db,
@@ -13,8 +14,13 @@ from ..websocket import ws_manager
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
+class LoginRequest(BaseModel):
+    password: str
+
+
 @router.post("/login")
-async def login(password: str, db = Depends(get_db)):
+async def login(request: LoginRequest, db = Depends(get_db)):
+    password = request.password
     settings_doc = await db.settings.find_one({"_id": "app_settings"})
     
     if settings_doc is None:
