@@ -5,10 +5,13 @@ from pydantic import BaseModel, Field
 
 
 class BoundingBox(BaseModel):
-    x: float
-    y: float
-    width: float
-    height: float
+    """Bounding box coordinates in Gemini format: [ymin, xmin, ymax, xmax]
+    Coordinates are normalized to 0-1000 coordinate system.
+    """
+    ymin: float
+    xmin: float
+    ymax: float
+    xmax: float
 
 
 class ProductData(BaseModel):

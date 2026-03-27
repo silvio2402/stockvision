@@ -77,8 +77,8 @@ async def detect_product_areas(
     products_desc = "\n".join([
         f'- Product: "{p.name}" (Item Code: {p.item_code})\n'
         f'  Description: {p.description or "N/A"}\n'
-        f'  Barcode location: x={p.barcode_bbox.x}, y={p.barcode_bbox.y}, '
-        f'width={p.barcode_bbox.width}, height={p.barcode_bbox.height}'
+        f'  Barcode location: ymin={p.barcode_bbox.ymin}, xmin={p.barcode_bbox.xmin}, '
+        f'ymax={p.barcode_bbox.ymax}, xmax={p.barcode_bbox.xmax}'
         for p in products
     ])
 
