@@ -24,10 +24,12 @@ If no barcodes are found, return: {"barcodes": []}'''
 
     await ws_manager.broadcast("scan_progress", {"step": "barcode_detection", "detail": "Detecting barcodes with Gemini"})
 
-    image = types.Part.from_file(image_path)
+    with open(image_path, "rb") as f:
+        image_data = f.read()
+
     response = client.models.generate_content(
         model=settings.gemini_models.barcode_detection,
-        contents=[prompt, image],
+        contents=[prompt, types.Part.from_bytes(data=image_data, mime_type="image/jpeg")],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
         ),
@@ -53,7 +55,7 @@ async def detect_product_areas(image_path: str, products: list[dict]) -> dict:
 
 {products_desc}
 
-For each product, identify the FULL AREA on the shelf where that product type is stored/displayed. 
+For each product, identify the FULL AREA on the shelf where that product type is stored/displayed.
 This area should encompass ALL units of that product visible on the shelf, not just the barcode.
 If a product appears to be completely out of stock, estimate where it would be based on its barcode position and neighboring products.
 
@@ -77,10 +79,12 @@ Return ONLY valid JSON:
 
     await ws_manager.broadcast("scan_progress", {"step": "product_area_detection", "detail": "Detecting product areas"})
 
-    image = types.Part.from_file(image_path)
+    with open(image_path, "rb") as f:
+        image_data = f.read()
+
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[prompt, image],
+        model=settings.gemini_models.product_area_detection,
+        contents=[prompt, types.Part.from_bytes(data=image_data, mime_type="image/jpeg")],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
         ),
@@ -114,10 +118,12 @@ Return ONLY valid JSON:
   "confidence": 0.0-1.0
 }}'''
 
-    image = types.Part.from_file(image_path)
+    with open(image_path, "rb") as f:
+        image_data = f.read()
+
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[prompt, image],
+        model=settings.gemini_models.stock_evaluation,
+        contents=[prompt, types.Part.from_bytes(data=image_data, mime_type="image/jpeg")],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
         ),
