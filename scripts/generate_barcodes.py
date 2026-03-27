@@ -44,7 +44,7 @@ def create_pdf(products, output_file):
     width, height = landscape(A4)
 
     margin = 15 * mm
-    label_width = (width - 2 * margin) / 4
+    label_width = (width - 2 * margin) / 3
     label_height = 35 * mm
 
     row = 0
@@ -81,7 +81,7 @@ def create_pdf(products, output_file):
         c.drawCentredString(x + label_width / 2, name_y, name)
 
         col += 1
-        if col >= 4:
+        if col >= 3:
             col = 0
             row += 1
 
@@ -111,7 +111,7 @@ def main():
 
         output_path = create_pdf(products, output_file)
         print(f"\n✅ Barcode PDF created: {output_path}")
-        print("\n📄 Layout: 4 barcodes per row, 7 rows per A4 landscape page")
+        print("\n📄 Layout: 3 barcodes per row, 7 rows per A4 landscape page")
         print("✨ Ready to print!")
 
     except Exception as e:
