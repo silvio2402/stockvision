@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useSettings, useUpdateSettings } from "../hooks/useSettings";
 import { Button, Input, Textarea } from "../components/layout/ui";
-import { Settings as SettingsIcon, Save, RotateCcw } from "lucide-react";
+import { Settings as SettingsIcon, Save, RotateCcw, Bug } from "lucide-react";
 import { cn } from "../lib/utils";
 
 export function SettingsPage() {
@@ -38,14 +38,7 @@ export function SettingsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600 mt-1">
-            Configure system preferences and integrations
-          </p>
-        </div>
-        
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-2">
           {hasChanges && (
             <>
@@ -193,6 +186,28 @@ export function SettingsPage() {
           <p className="text-sm text-gray-600">
             Google Gemini AI models used for detection and evaluation
           </p>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard
+        title="Developer Settings"
+        icon={<Bug className="h-5 w-5" />}
+      >
+        <div className="space-y-4">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={currentSettings.developer_mode}
+              onChange={(e) => handleChange("developer_mode", e.target.checked)}
+              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+            />
+            <div>
+              <div className="font-medium text-gray-900">Developer Mode</div>
+              <div className="text-sm text-gray-600">
+                Show debugging tools and experimental features
+              </div>
+            </div>
+          </label>
         </div>
       </SettingsCard>
     </div>

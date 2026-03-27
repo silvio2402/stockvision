@@ -65,17 +65,24 @@ function App() {
                 path="*"
                 element={
                   <ProtectedRoute>
-                    <AppContent>
-                      <Routes>
-                        <Route path="/" element={<DashboardPage />} />
-                        <Route path="/camera" element={<CameraPage />} />
-                        <Route path="/products" element={<ProductsPage />} />
-                        <Route path="/orders" element={<OrdersPage />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="/debug" element={<DebugPage />} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
-                    </AppContent>
+                    <Routes>
+                      <Route path="/camera" element={<CameraPage />} />
+                      <Route
+                        path="*"
+                        element={
+                          <AppContent>
+                            <Routes>
+                              <Route path="/" element={<DashboardPage />} />
+                              <Route path="/products" element={<ProductsPage />} />
+                              <Route path="/orders" element={<OrdersPage />} />
+                              <Route path="/settings" element={<SettingsPage />} />
+                              <Route path="/debug" element={<DebugPage />} />
+                              <Route path="*" element={<Navigate to="/" replace />} />
+                            </Routes>
+                          </AppContent>
+                        }
+                      />
+                    </Routes>
                   </ProtectedRoute>
                 }
               />

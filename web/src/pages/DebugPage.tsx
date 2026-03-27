@@ -4,7 +4,7 @@ import { BoundingBoxOverlay, BoxItem } from "../components/detection/BoundingBox
 import { DetectionResult, DetectionProduct, UnknownItem, BoundingBox } from "../types";
 import { Button } from "../components/layout/ui";
 import { formatRelativeTime } from "../lib/utils";
-import { Bug, RefreshCw, Eye, EyeOff, ChevronDown, Clock, Cpu } from "lucide-react";
+import { Bug, RefreshCw, Eye, EyeOff, ChevronDown, Clock, Cpu, Upload } from "lucide-react";
 
 export function DebugPage() {
   const [selectedDetectionId, setSelectedDetectionId] = useState<string | null>(null);
@@ -22,6 +22,19 @@ export function DebugPage() {
 
   const handleScan = () => {
     triggerScan.mutate("camera-1");
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await triggerScan.mutateAsync({ file } as any);
+      setSelectedDetectionId(null); // Switch to latest
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Failed to upload image");
+    }
   };
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,17 +96,18 @@ export function DebugPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Bug className="h-6 w-6 text-gray-700" />
-            System Debug
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Inspect detection results and AI reasoning
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 bg-white border px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors text-sm font-medium">
+            <Upload className="h-4 w-4" />
+            <span>Upload Image</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleUpload}
+              className="hidden"
+            />
+          </label>
           <Button onClick={handleScan} disabled={triggerScan.isPending}>
             <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
             {triggerScan.isPending ? "Scanning..." : "Trigger Scan"}

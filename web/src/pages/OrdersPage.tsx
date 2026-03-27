@@ -42,16 +42,25 @@ export function OrdersPage() {
   const pendingOrders = orders?.filter((o) => o.status === "pending_approval") || [];
   const otherOrders = orders?.filter((o) => o.status !== "pending_approval") || [];
 
-  return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+  if (!orders || orders.length === 0) {
+    return (
+      <div className="p-6 h-full flex flex-col items-center justify-center text-center space-y-4 bg-white rounded-xl border">
+        <div className="bg-gray-50 p-4 rounded-full">
+          <ClipboardCheck className="h-8 w-8 text-gray-400" />
+        </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-600 mt-1">
-            Review and approve orders for products running out
+          <h3 className="text-lg font-semibold text-gray-900">No orders found</h3>
+          <p className="text-gray-600 max-w-sm">
+            Everything is up to date! New orders will appear here when stock levels run low.
           </p>
         </div>
-        
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-end">
         {pendingOrders.length > 0 && (
           <div className="flex items-center gap-2 bg-amber-100 text-amber-700 px-4 py-2 rounded-lg">
             <ClipboardCheck className="h-4 w-4" />

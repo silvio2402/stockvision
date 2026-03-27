@@ -10,6 +10,7 @@ class GeminiModels(BaseModel):
 class AppSettings(BaseModel):
     scan_interval_minutes: int = 10
     approval_required: bool = False
+    developer_mode: bool = False
     order_email: str = ""
 
     smtp_host: str = ""
@@ -25,6 +26,7 @@ class AppSettings(BaseModel):
 class AppSettingsUpdate(BaseModel):
     scan_interval_minutes: int | None = None
     approval_required: bool | None = None
+    developer_mode: bool | None = None
     order_email: str | None = None
 
     smtp_host: str | None = None
@@ -40,6 +42,7 @@ class AppSettingsResponse(BaseModel):
 
     scan_interval_minutes: int = 10
     approval_required: bool = False
+    developer_mode: bool = False
     order_email: str = ""
 
     smtp_host: str = ""

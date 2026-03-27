@@ -51,14 +51,7 @@ export function ProductsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600 mt-1">
-            Configure running out conditions and order amounts
-          </p>
-        </div>
-        
+      <div className="flex items-center justify-end">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"

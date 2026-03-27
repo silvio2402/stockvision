@@ -43,7 +43,7 @@ export function ImageViewer() {
 
   const boxes = detection.products.map((p) => ({
     bbox: p.product_area_bounding_box,
-    label: `${p.item_code} - ${p.status}`,
+    label: p.item_code,
     status: p.status as "in_stock" | "running_out",
   }));
 

@@ -26,7 +26,7 @@ export function Button({
 
   return (
     <button
-      className={`rounded-lg font-medium transition-colors ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {children}

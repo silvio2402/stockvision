@@ -70,6 +70,7 @@ export interface Order {
 export interface AppSettings {
   scan_interval_minutes: number;
   approval_required: boolean;
+  developer_mode: boolean;
   order_email: string;
   smtp_host: string;
   smtp_port: number;

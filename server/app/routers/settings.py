@@ -34,6 +34,7 @@ async def get_settings(
     return AppSettingsResponse(
         scan_interval_minutes=doc.get("scan_interval_minutes", 10),
         approval_required=doc.get("approval_required", False),
+        developer_mode=doc.get("developer_mode", False),
         order_email=doc.get("order_email", ""),
         smtp_host=doc.get("smtp_host", ""),
         smtp_port=doc.get("smtp_port", 587),
@@ -57,7 +58,7 @@ async def update_settings(
     if "password_hash" in update_dict:
         del update_dict["password_hash"]
 
-    if update_dict.get("gemini_models") is None:
+    if update_dict.get("gemini_models") is None and "gemini_models" in update_dict:
         del update_dict["gemini_models"]
 
     if update_dict:
