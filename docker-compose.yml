@@ -1,0 +1,39 @@
+services:
+  server:
+    build: ./server
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - MONGODB_DATABASE=stockvision
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ERP_PRODUCT_URL=https://hook.eu1.make.celonis.com/79j69cp1aesv98zwozwgpduz86hk71rr
+      - ERP_PRODUCTS_LIST_URL=https://hook.eu1.make.celonis.com/2dkavnxbe1o4rns7k75r1ej9yqflfa7x
+      - IMAGE_STORAGE_PATH=/app/data/images
+      - APP_PASSWORD=${APP_PASSWORD:-stockvision}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+    volumes:
+      - image_data:/app/data/images
+    depends_on:
+      - mongo
+
+  web:
+    build: ./web
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8000
+    depends_on:
+      - server
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
+  image_data:
