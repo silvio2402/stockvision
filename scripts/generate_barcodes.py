@@ -9,14 +9,10 @@ Default output: barcodes.pdf
 """
 
 from pymongo import MongoClient
-import barcode
-from barcode.writer import ImageWriter
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm, inch
-from reportlab.graphics import renderPDF
-from PIL import Image
-import io
+from reportlab.lib.units import mm
+from reportlab.graphics.barcode import code128
 import sys
 
 
@@ -40,80 +36,42 @@ def get_products():
     return products
 
 
-def generate_barcode_image(item_code):
-    """Generate barcode image as bytes."""
-    Code128 = barcode.get_barcode_class("code128")
-    writer = ImageWriter()
-    barcode_obj = Code128(item_code, writer=writer)
-
-    # Store image in memory
-    img_io = io.BytesIO()
-    barcode_obj.write(img_io)
-    img_io.seek(0)
-
-    return Image.open(img_io)
-
-
 def create_pdf(products, output_file):
     """Create PDF with barcodes."""
     c = canvas.Canvas(output_file, pagesize=A4)
     width, height = A4
 
-    # Layout settings
     margin = 15 * mm
     label_width = (width - 2 * margin) / 3
     label_height = 35 * mm
-    barcode_height = 20 * mm
-    text_height = 10 * mm
 
     row = 0
     col = 0
 
     c.setFont("Helvetica-Bold", 10)
 
-    for i, product in enumerate(products):
+    for product in products:
         item_code = product["item_code"]
         name = product["name"]
-        description = product.get("description", "")
 
-        # Calculate position
         x = margin + col * label_width
         y = height - margin - (row + 1) * label_height
 
-        # Draw border
         c.rect(x, y, label_width - 2*mm, label_height - 2*mm, stroke=1)
 
-        # Generate and draw barcode
-        try:
-            barcode_img = generate_barcode_image(item_code)
-            barcode_bytes = io.BytesIO()
-            barcode_img.save(barcode_bytes, format="PNG")
-            barcode_bytes.seek(0)
+        barcode = code128.Code128(item_code, barWidth=0.5, barHeight=15*mm)
+        barcode_width = barcode.width
+        barcode_height = barcode.height
 
-            barcode_x = x + (label_width - barcode_img.width) / 2 - mm
-            barcode_y = y + label_height - barcode_height - 10*mm
+        barcode_x = x + (label_width - barcode_width) / 2
+        barcode_y = y + label_height - barcode_height - 8*mm
 
-            c.drawImage(
-                io.BytesIO(barcode_bytes.getvalue()),
-                barcode_x, barcode_y,
-                width=barcode_img.width,
-                height=barcode_img.height,
-                mask="auto"
-            )
-        except Exception as e:
-            print(f"Warning: Failed to generate barcode for {item_code}: {e}")
-            c.setFillColorRGB(0.8, 0.8, 0.8)
-            c.rect(x + 5*mm, y + label_height - barcode_height - 10*mm, label_width - 25*mm, barcode_height, fill=1, stroke=0)
-            c.setFillColorRGB(0, 0, 0)
+        barcode.drawOn(c, barcode_x, barcode_y)
 
-        # Draw text labels
         c.setFillColorRGB(0, 0, 0)
-
-        # Item code (bold)
         c.setFont("Helvetica-Bold", 10)
         c.drawCentredString(x + label_width / 2, y + 8*mm, f"Barcode: {item_code}")
 
-        # Product name
         c.setFont("Helvetica", 8)
         name_y = y + 3*mm
         if len(name) > 25:
@@ -125,7 +83,6 @@ def create_pdf(products, output_file):
             col = 0
             row += 1
 
-            # New page if needed
             if row >= 8:
                 c.showPage()
                 row = 0
