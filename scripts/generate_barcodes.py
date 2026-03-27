@@ -38,11 +38,13 @@ def get_products():
 
 def create_pdf(products, output_file):
     """Create PDF with barcodes."""
-    c = canvas.Canvas(output_file, pagesize=A4)
-    width, height = A4
+    from reportlab.lib.pagesizes import landscape
+
+    c = canvas.Canvas(output_file, pagesize=landscape(A4))
+    width, height = landscape(A4)
 
     margin = 15 * mm
-    label_width = (width - 2 * margin) / 3
+    label_width = (width - 2 * margin) / 4
     label_height = 35 * mm
 
     row = 0
@@ -59,7 +61,7 @@ def create_pdf(products, output_file):
 
         c.rect(x, y, label_width - 2*mm, label_height - 2*mm, stroke=1)
 
-        barcode = code128.Code128(item_code, barWidth=1.2, barHeight=10*mm)
+        barcode = code128.Code128(item_code, barWidth=1.8, barHeight=12*mm)
         barcode_width = barcode.width
         barcode_height = barcode.height
 
@@ -79,11 +81,11 @@ def create_pdf(products, output_file):
         c.drawCentredString(x + label_width / 2, name_y, name)
 
         col += 1
-        if col >= 3:
+        if col >= 4:
             col = 0
             row += 1
 
-            if row >= 8:
+            if row >= 7:
                 c.showPage()
                 row = 0
 
@@ -109,7 +111,7 @@ def main():
 
         output_path = create_pdf(products, output_file)
         print(f"\n✅ Barcode PDF created: {output_path}")
-        print("\n📄 Layout: 3 barcodes per row, 8 rows per A4 page")
+        print("\n📄 Layout: 4 barcodes per row, 7 rows per A4 landscape page")
         print("✨ Ready to print!")
 
     except Exception as e:
