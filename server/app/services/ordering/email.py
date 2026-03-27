@@ -19,7 +19,7 @@ async def send_order_email(order: dict, db) -> bool:
         return False
     
     items_text = "\n".join([
-        f"  - {item['name']} (Item Code: {item['item_code']}) x{item['order_amount']}"
+        f"  - {item.get('name', 'Unknown')} (Item Code: {item.get('item_code', 'N/A')}) x{item.get('order_amount', 1)}"
         for item in order.get("items", [])
     ])
     

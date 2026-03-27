@@ -22,7 +22,7 @@ async def list_orders(
     cursor = db.orders.find(query).sort("created_at", -1)
     orders = []
     async for doc in cursor:
-        doc["id"] = str(doc["_id"])
+        doc["id"] = str(doc.get("_id", ""))
         orders.append(OrderInDB(**doc))
     return orders
 
@@ -42,7 +42,7 @@ async def get_order(
     doc = await db.orders.find_one({"_id": object_id})
     if doc is None:
         raise HTTPException(status_code=404, detail="Order not found")
-    doc["id"] = str(doc["_id"])
+    doc["id"] = str(doc.get("_id", ""))
     return OrderInDB(**doc)
 
 
@@ -61,7 +61,7 @@ async def approve_order(
     order_doc = await db.orders.find_one({"_id": object_id})
     if order_doc is None:
         raise HTTPException(status_code=404, detail="Order not found")
-    if order_doc["status"] != "pending_approval":
+    if order_doc.get("status") != "pending_approval":
         raise HTTPException(status_code=400, detail="Order is not pending approval")
 
     from ..services.ordering.service import send_order_email
@@ -77,7 +77,7 @@ async def approve_order(
     )
 
     doc = await db.orders.find_one({"_id": object_id})
-    doc["id"] = str(doc["_id"])
+    doc["id"] = str(doc.get("_id", ""))
     return OrderInDB(**doc)
 
 
@@ -96,7 +96,7 @@ async def decline_order(
     order_doc = await db.orders.find_one({"_id": object_id})
     if order_doc is None:
         raise HTTPException(status_code=404, detail="Order not found")
-    if order_doc["status"] != "pending_approval":
+    if order_doc.get("status") != "pending_approval":
         raise HTTPException(status_code=400, detail="Order is not pending approval")
 
     await db.orders.update_one(
@@ -108,5 +108,5 @@ async def decline_order(
     )
 
     doc = await db.orders.find_one({"_id": object_id})
-    doc["id"] = str(doc["_id"])
+    doc["id"] = str(doc.get("_id", ""))
     return OrderInDB(**doc)
