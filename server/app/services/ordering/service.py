@@ -74,12 +74,14 @@ async def check_and_create_orders(db):
     cursor = db.products.find({
         "current_status": "running_out",
         "order_amount": {"$ne": None, "$gt": 0},
-        "running_out_condition": {"$ne": None, "$ne": ""}
+        "running_out_condition": {"$nin": [None, ""]}
     })
     
     known_product_codes = {}
     async for doc in cursor:
-        known_product_codes[doc["item_code"]] = doc
+        item_code = doc.get("item_code")
+        if item_code:
+            known_product_codes[item_code] = doc
     
     pending_order_items = []
     cursor = db.orders.find({
@@ -88,7 +90,9 @@ async def check_and_create_orders(db):
     
     async for doc in cursor:
         for item in doc.get("items", []):
-            pending_order_items.append(item["item_code"])
+            item_code = item.get("item_code")
+            if item_code:
+                pending_order_items.append(item_code)
     
     items_to_order = []
     for item_code, product in known_product_codes.items():

@@ -65,6 +65,8 @@ DO NOT try to decode the barcode text - that will be handled separately.'''
         ),
     )
 
+    if response.parsed is None:
+        return []
     return response.parsed.barcodes
 
 
@@ -106,6 +108,8 @@ Also identify any areas with products that don't match any of the listed product
         ),
     )
 
+    if response.parsed is None:
+        return ProductAreasResponse(product_areas=[], unknown_areas=[])
     return response.parsed
 
 
@@ -140,4 +144,6 @@ Analyze carefully:
         ),
     )
 
+    if response.parsed is None:
+        return StockEvaluationResponse(is_running_out=False, reasoning="Failed to parse Gemini response", confidence=0.0)
     return response.parsed

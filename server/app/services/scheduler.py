@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -10,10 +11,23 @@ from .ordering.service import check_and_create_orders
 logger = logging.getLogger(__name__)
 scheduler = BackgroundScheduler()
 
+_main_loop: asyncio.AbstractEventLoop | None = None
+
+
+def _run_async(coro):
+    """Schedule a coroutine on the main event loop from a background thread."""
+    if _main_loop is None or _main_loop.is_closed():
+        logger.error("Main event loop not available; skipping scheduled job")
+        return
+    future = asyncio.run_coroutine_threadsafe(coro, _main_loop)
+    try:
+        future.result(timeout=120)
+    except Exception as e:
+        logger.error(f"Scheduled job failed: {e}")
+
 
 def scan_job():
-    import asyncio
-    asyncio.run(run_periodic_scan())
+    _run_async(run_periodic_scan())
 
 
 async def run_periodic_scan():
@@ -22,8 +36,7 @@ async def run_periodic_scan():
 
 
 def order_check_job():
-    import asyncio
-    asyncio.run(run_periodic_order_check())
+    _run_async(run_periodic_order_check())
 
 
 async def run_periodic_order_check():
@@ -33,6 +46,13 @@ async def run_periodic_order_check():
 
 
 def start_scheduler():
+    global _main_loop
+    try:
+        _main_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        _main_loop = None
+        logger.warning("No running event loop; scheduler jobs may not work")
+
     try:
         scheduler.add_job(
             scan_job,

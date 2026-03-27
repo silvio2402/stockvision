@@ -71,7 +71,7 @@ export function SettingsPage() {
             type="number"
             label="Scan Interval (minutes)"
             value={currentSettings.scan_interval_minutes}
-            onChange={(e) => handleChange("scan_interval_minutes", parseInt(e.target.value))}
+            onChange={(e) => handleChange("scan_interval_minutes", parseInt(e.target.value) || 1)}
             min={1}
           />
           <p className="text-sm text-gray-600">
@@ -127,7 +127,7 @@ export function SettingsPage() {
               type="number"
               label="SMTP Port"
               value={currentSettings.smtp_port}
-              onChange={(e) => handleChange("smtp_port", parseInt(e.target.value))}
+              onChange={(e) => handleChange("smtp_port", parseInt(e.target.value) || 587)}
             />
           </div>
 

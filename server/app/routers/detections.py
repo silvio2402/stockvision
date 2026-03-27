@@ -19,7 +19,7 @@ async def list_detections(
     cursor = db.detections.find().sort("created_at", -1).skip(offset).limit(limit)
     detections = []
     async for doc in cursor:
-        doc["id"] = str(doc["_id"])
+        doc["id"] = str(doc.get("_id", ""))
         detections.append(DetectionResultInDB(**doc))
     return detections
 
@@ -32,7 +32,7 @@ async def get_latest_detection(
     doc = await db.detections.find_one(sort=[("created_at", -1)])
     if doc is None:
         raise HTTPException(status_code=404, detail="No detections found")
-    doc["id"] = str(doc["_id"])
+    doc["id"] = str(doc.get("_id", ""))
     return DetectionResultInDB(**doc)
 
 
@@ -51,5 +51,5 @@ async def get_detection(
     doc = await db.detections.find_one({"_id": object_id})
     if doc is None:
         raise HTTPException(status_code=404, detail="Detection not found")
-    doc["id"] = str(doc["_id"])
+    doc["id"] = str(doc.get("_id", ""))
     return DetectionResultInDB(**doc)

@@ -72,13 +72,17 @@ async def health_check():
 
 @app.get("/api/images/{path:path}")
 async def serve_image(path: str):
-    from fastapi.responses import FileResponse
+    from fastapi.responses import FileResponse, JSONResponse
     from pathlib import Path
     
-    full_path = Path(settings.image_storage_path) / path
+    storage_root = Path(settings.image_storage_path).resolve()
+    full_path = (storage_root / path).resolve()
+    
+    if not str(full_path).startswith(str(storage_root)):
+        return JSONResponse(status_code=403, content={"error": "Forbidden"})
+    
     if full_path.is_file():
         return FileResponse(full_path)
-    from fastapi.responses import JSONResponse
     return JSONResponse(status_code=404, content={"error": "Image not found"})
 
 

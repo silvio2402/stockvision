@@ -1,3 +1,4 @@
+import logging
 import time
 from datetime import datetime
 
@@ -16,6 +17,8 @@ from .gemini import (
 )
 from .image import crop_bbox, decode_barcode
 
+logger = logging.getLogger(__name__)
+
 
 async def run_detection_pipeline(image_path: str, camera_id: str = "camera-1") -> str:
     start_time = time.time()
@@ -29,11 +32,21 @@ async def run_detection_pipeline(image_path: str, camera_id: str = "camera-1") -
         raise RuntimeError("Product repository not initialized. Please check server startup.")
     repo = app.state.product_repo
 
-    with open(image_path, "rb") as f:
-        image_data = f.read()
-    image = Image.open(image_path)
+    try:
+        with open(image_path, "rb") as f:
+            image_data = f.read()
+        image = Image.open(image_path)
+    except (FileNotFoundError, OSError) as e:
+        logger.error(f"Failed to read image {image_path}: {e}")
+        await ws_manager.broadcast("scan_error", {"camera_id": camera_id, "error": f"Image read failed: {e}"})
+        raise
 
-    barcodes = await detect_barcodes(image_data)
+    try:
+        barcodes = await detect_barcodes(image_data)
+    except Exception as e:
+        logger.error(f"Barcode detection failed: {e}")
+        await ws_manager.broadcast("scan_error", {"camera_id": camera_id, "error": "Barcode detection failed"})
+        raise
 
     matched_products: list[MatchedProduct] = []
     for barcode in barcodes:
@@ -59,7 +72,11 @@ async def run_detection_pipeline(image_path: str, camera_id: str = "camera-1") -
         ))
 
     if matched_products:
-        areas = await detect_product_areas(image_data, matched_products)
+        try:
+            areas = await detect_product_areas(image_data, matched_products)
+        except Exception as e:
+            logger.error(f"Product area detection failed: {e}")
+            areas = ProductAreasResponse(product_areas=[], unknown_areas=[])
     else:
         areas = ProductAreasResponse(product_areas=[], unknown_areas=[])
 
@@ -79,15 +96,20 @@ async def run_detection_pipeline(image_path: str, camera_id: str = "camera-1") -
         area_bbox = product_area_map.get(matched.item_code, matched.barcode_bbox)
 
         if product.running_out_condition:
-            crop_data = crop_bbox(image, area_bbox)
-            evaluation = await evaluate_stock_level(
-                image_data=crop_data,
-                name=product.name,
-                description=product.description,
-                running_out_condition=product.running_out_condition,
-            )
-            status = "running_out" if evaluation.is_running_out else "in_stock"
-            reasoning = evaluation.reasoning
+            try:
+                crop_data = crop_bbox(image, area_bbox)
+                evaluation = await evaluate_stock_level(
+                    image_data=crop_data,
+                    name=product.name,
+                    description=product.description,
+                    running_out_condition=product.running_out_condition,
+                )
+                status = "running_out" if evaluation.is_running_out else "in_stock"
+                reasoning = evaluation.reasoning
+            except Exception as e:
+                logger.error(f"Stock evaluation failed for {matched.item_code}: {e}")
+                status = "in_stock"
+                reasoning = f"Stock evaluation failed: {e}"
         else:
             status = "in_stock"
             reasoning = "Visual check indicates adequate stock"
@@ -154,8 +176,11 @@ async def run_detection_pipeline(image_path: str, camera_id: str = "camera-1") -
         },
     })
 
-    from ..ordering.service import check_and_create_orders
-    await check_and_create_orders(db)
+    try:
+        from ..ordering.service import check_and_create_orders
+        await check_and_create_orders(db)
+    except Exception as e:
+        logger.error(f"Post-scan order check failed: {e}")
 
     return detection_id
 
