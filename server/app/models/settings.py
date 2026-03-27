@@ -2,9 +2,9 @@ from pydantic import BaseModel
 
 
 class GeminiModels(BaseModel):
-    barcode_detection: str = "gemini-2.0-flash"
-    product_area_detection: str = "gemini-2.5-flash"
-    stock_evaluation: str = "gemini-2.5-flash"
+    barcode_detection: str = "gemini-3-flash-preview"
+    product_area_detection: str = "gemini-3-flash-preview"
+    stock_evaluation: str = "gemini-3-flash-preview"
 
 
 class AppSettings(BaseModel):

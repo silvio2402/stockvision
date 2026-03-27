@@ -31,9 +31,9 @@ async def login(request: LoginRequest, db = Depends(get_db)):
             "scan_interval_minutes": 10,
             "approval_required": False,
             "gemini_models": {
-                "barcode_detection": "gemini-2.0-flash",
-                "product_area_detection": "gemini-2.5-flash",
-                "stock_evaluation": "gemini-2.5-flash"
+                "barcode_detection": "gemini-3-flash-preview",
+                "product_area_detection": "gemini-3-flash-preview",
+                "stock_evaluation": "gemini-3-flash-preview"
             }
         })
         stored_hash = hashed

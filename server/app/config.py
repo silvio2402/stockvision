@@ -3,9 +3,9 @@ from pydantic_settings import BaseSettings
 
 
 class GeminiModels(BaseModel):
-    barcode_detection: str = "models/gemini-2.5-flash"
-    product_area_detection: str = "models/gemini-2.5-flash"
-    stock_evaluation: str = "models/gemini-2.5-flash"
+    barcode_detection: str = "gemini-3-flash-preview"
+    product_area_detection: str = "gemini-3-flash-preview"
+    stock_evaluation: str = "gemini-3-flash-preview"
 
 
 class Settings(BaseSettings):
