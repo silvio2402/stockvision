@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { useLatestDetection } from "../hooks/useDetections";
 import { useProducts } from "../hooks/useProducts";
 import { useOrders } from "../hooks/useOrders";

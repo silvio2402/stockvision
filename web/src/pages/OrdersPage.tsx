@@ -125,14 +125,14 @@ function OrderSection({
 
 interface OrderCardProps {
   order: any;
-  statusConfig: Record<OrderStatus, { icon: React.ElementType; color: string; label: string }>;
   onApprove?: (id: string) => void;
   onDecline?: (id: string) => void;
   showActions?: boolean;
+  statusConfig: Record<OrderStatus, { icon: React.ElementType; color: string; label: string }>;
 }
 
 function OrderCard({ order, statusConfig, onApprove, onDecline, showActions }: OrderCardProps) {
-  const statusInfo = statusConfig[order.status];
+  const statusInfo = statusConfig[order.status as OrderStatus];
   const StatusIcon = statusInfo.icon;
 
   return (

@@ -30,7 +30,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const wsUrl = `${import.meta.env.VITE_WS_URL || "ws://localhost:8000"}/ws?token=${token}`;
+    const wsUrl = `ws://localhost:8000/ws?token=${token}`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {

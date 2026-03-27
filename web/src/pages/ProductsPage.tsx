@@ -1,18 +1,17 @@
 import React, { useState } from "react";
-import { useProducts, useUpdateProduct, useProduct } from "../hooks/useProducts";
+import { useProducts } from "../hooks/useProducts";
 import { Button, Input, Textarea } from "../components/layout/ui";
 import { Search, Package, Edit2, Check, X, AlertCircle } from "lucide-react";
 import { cn } from "../lib/utils";
-import { ProductStatus } from "../types";
 
 export function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showNeedsReview, setShowNeedsReview] = useState(false);
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
-  const { data: products, isLoading } = useProducts(
+  const [isSaving, setIsSaving] = useState(false);
+  const { data: products, isLoading, refetch } = useProducts(
     showNeedsReview ? { needs_review: true } : undefined
   );
-  const updateProduct = useUpdateProduct();
 
   const filteredProducts = products?.filter(
     (p) =>
@@ -21,12 +20,17 @@ export function ProductsPage() {
   );
 
   const handleSave = async (itemCode: string, data: any) => {
+    setIsSaving(true);
     try {
-      await updateProduct.mutateAsync({ item_code: itemCode, ...data });
+      const { apiClient } = await import("../api/client");
+      await apiClient.updateProduct(itemCode, data);
+      refetch();
       setEditingProduct(null);
     } catch (error) {
       console.error("Failed to update product:", error);
       alert("Failed to update product");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -34,7 +38,7 @@ export function ProductsPage() {
     setEditingProduct(null);
   };
 
-  const statusConfig: Record<ProductStatus, { color: string; label: string }> = {
+  const statusConfig = {
     in_stock: { color: "bg-green-100 text-green-700", label: "In Stock" },
     running_out: { color: "bg-red-100 text-red-700", label: "Running Out" },
     unknown: { color: "bg-amber-100 text-amber-700", label: "Unknown" },
@@ -89,7 +93,7 @@ export function ProductsPage() {
                   product={product}
                   onSave={handleSave}
                   onCancel={handleCancel}
-                  loading={updateProduct.isPending}
+                  isSaving={isSaving}
                 />
               ) : (
                 <ProductRow
@@ -115,7 +119,7 @@ export function ProductsPage() {
 interface ProductRowProps {
   product: any;
   onEdit: () => void;
-  statusConfig: Record<ProductStatus, { color: string; label: string }>;
+  statusConfig: Record<string, { color: string; label: string }>;
 }
 
 function ProductRow({ product, onEdit, statusConfig }: ProductRowProps) {
@@ -173,10 +177,10 @@ interface ProductEditFormProps {
   product: any;
   onSave: (itemCode: string, data: any) => void;
   onCancel: () => void;
-  loading: boolean;
+  isSaving: boolean;
 }
 
-function ProductEditForm({ product, onSave, onCancel, loading }: ProductEditFormProps) {
+function ProductEditForm({ product, onSave, onCancel, isSaving }: ProductEditFormProps) {
   const [formData, setFormData] = useState({
     running_out_condition: product.running_out_condition || "",
     order_amount: product.order_amount || "",
@@ -218,11 +222,11 @@ function ProductEditForm({ product, onSave, onCancel, loading }: ProductEditForm
         </div>
 
         <div className="flex items-center gap-2">
-          <Button type="submit" size="sm" disabled={loading}>
+          <Button type="submit" size="sm" disabled={isSaving}>
             <Check className="h-4 w-4 mr-1" />
             Save
           </Button>
-          <Button type="button" variant="secondary" size="sm" onClick={onCancel} disabled={loading}>
+          <Button type="button" variant="secondary" size="sm" onClick={onCancel} disabled={isSaving}>
             <X className="h-4 w-4 mr-1" />
             Cancel
           </Button>
