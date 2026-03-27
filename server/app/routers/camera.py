@@ -32,10 +32,9 @@ async def capture_image(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save image: {e}")
 
-    relative_path = f"{camera_id}/{filename}"
     detection_id = await run_detection_pipeline(str(file_path), camera_id)
 
-    return {"detection_id": detection_id, "image_path": relative_path}
+    return {"detection_id": detection_id, "image_path": filename}
 
 
 @router.post("/scan")
