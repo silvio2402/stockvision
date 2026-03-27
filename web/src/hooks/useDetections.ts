@@ -10,6 +10,14 @@ export function useLatestDetection() {
   });
 }
 
+export function useDetection(id: string | null) {
+  return useQuery({
+    queryKey: ["detection", id],
+    queryFn: () => apiClient.getDetection(id!),
+    enabled: !!id,
+  });
+}
+
 export function useDetections(limit = 20, offset = 0) {
   return useQuery({
     queryKey: ["detections", limit, offset],

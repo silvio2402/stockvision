@@ -1,0 +1,301 @@
+import React, { useState, useRef, useEffect } from "react";
+import { useLatestDetection, useDetections, useDetection, useTriggerScan } from "../hooks/useDetections";
+import { BoundingBoxOverlay, BoxItem } from "../components/detection/BoundingBoxOverlay";
+import { DetectionResult, DetectionProduct, UnknownItem, BoundingBox } from "../types";
+import { Button } from "../components/layout/ui";
+import { formatRelativeTime } from "../lib/utils";
+import { Bug, RefreshCw, Eye, EyeOff, ChevronDown, Clock, Cpu } from "lucide-react";
+
+export function DebugPage() {
+  const [selectedDetectionId, setSelectedDetectionId] = useState<string | null>(null);
+  const [showProductAreas, setShowProductAreas] = useState(true);
+  const [showBarcodeBoxes, setShowBarcodeBoxes] = useState(true);
+  const [showUnknownItems, setShowUnknownItems] = useState(true);
+
+  const { data: latestDetection, isLoading: isLoadingLatest } = useLatestDetection();
+  const { data: detectionsList } = useDetections(20);
+  const { data: selectedDetection, isLoading: isLoadingSelected } = useDetection(selectedDetectionId);
+  const triggerScan = useTriggerScan();
+
+  const activeDetection = selectedDetectionId ? selectedDetection : latestDetection;
+  const isLoading = selectedDetectionId ? isLoadingSelected : isLoadingLatest;
+
+  const handleScan = () => {
+    triggerScan.mutate("camera-1");
+  };
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [imageNaturalSize, setImageNaturalSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        setContainerSize({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
+      }
+    };
+
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
+  const boxes: BoxItem[] = [];
+  if (activeDetection) {
+    if (showProductAreas) {
+      activeDetection.products.forEach((p: DetectionProduct) => {
+        boxes.push({
+          bbox: p.product_area_bounding_box,
+          label: `${p.item_code} area`,
+          status: p.status,
+          strokeStyle: "solid"
+        });
+      });
+    }
+    if (showBarcodeBoxes) {
+      activeDetection.products.forEach((p: DetectionProduct) => {
+        boxes.push({
+          bbox: p.barcode_bounding_box,
+          label: `${p.item_code} barcode`,
+          color: "#3b82f6",
+          strokeStyle: "dashed"
+        });
+      });
+    }
+    if (showUnknownItems) {
+      activeDetection.unknown_items.forEach((u: UnknownItem) => {
+        boxes.push({
+          bbox: u.bounding_box,
+          label: u.description.length > 30 ? u.description.substring(0, 30) + "..." : u.description,
+          color: "#f59e0b",
+          strokeStyle: "dotted"
+        });
+      });
+    }
+  }
+
+  const formatBBox = (bbox: BoundingBox) => {
+    return `(${Math.round(bbox.x)}, ${Math.round(bbox.y)}, ${Math.round(bbox.width)}, ${Math.round(bbox.height)})`;
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Bug className="h-6 w-6 text-gray-700" />
+            System Debug
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Inspect detection results and AI reasoning
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button onClick={handleScan} disabled={triggerScan.isPending}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
+            {triggerScan.isPending ? "Scanning..." : "Trigger Scan"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Detection History:</label>
+          <div className="relative w-full sm:w-80">
+            <select
+              className="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-8"
+              value={selectedDetectionId || ""}
+              onChange={(e) => setSelectedDetectionId(e.target.value || null)}
+            >
+              <option value="">Latest Detection</option>
+              {detectionsList?.map((d: DetectionResult) => (
+                <option key={d.id} value={d.id}>
+                  {formatRelativeTime(d.timestamp)} — {d.products.length} products
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-3 h-4 w-4 text-gray-500 pointer-events-none" />
+          </div>
+        </div>
+
+        {activeDetection && (
+          <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Clock className="h-4 w-4" />
+              {formatRelativeTime(activeDetection.timestamp)}
+            </div>
+            <div className="flex items-center gap-2 text-gray-600">
+              <Cpu className="h-4 w-4" />
+              {(activeDetection.processing_time_ms / 1000).toFixed(1)}s
+            </div>
+            <div className="text-gray-600">
+              Camera: {activeDetection.camera_id}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3 space-y-4">
+          <div
+            ref={containerRef}
+            className="relative bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center"
+            style={{ minHeight: "500px" }}
+          >
+            {isLoading ? (
+              <div className="text-gray-400">Loading detection data...</div>
+            ) : activeDetection ? (
+              <>
+                <img
+                  src={`/api/images/${activeDetection.image_path}`}
+                  alt="Detection"
+                  className="w-full h-full object-contain absolute inset-0"
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+                    if (containerRef.current) {
+                      setContainerSize({
+                        width: containerRef.current.clientWidth,
+                        height: containerRef.current.clientHeight,
+                      });
+                    }
+                  }}
+                />
+                {activeDetection.products.length > 0 && imageNaturalSize.width > 0 && (
+                  <BoundingBoxOverlay
+                    boundingBoxes={boxes}
+                    imageNaturalWidth={imageNaturalSize.width}
+                    imageNaturalHeight={imageNaturalSize.height}
+                    containerWidth={containerSize.width}
+                    containerHeight={containerSize.height}
+                  />
+                )}
+              </>
+            ) : (
+              <div className="text-gray-400">No detection data available</div>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="bg-white rounded-lg border p-4">
+            <h3 className="font-semibold text-gray-900 mb-4">Overlay Layers</h3>
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  checked={showProductAreas}
+                  onChange={(e) => setShowProductAreas(e.target.checked)}
+                />
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <div className="w-3 h-3 rounded-full bg-red-500 -ml-1" />
+                  <span className="text-sm text-gray-700">Product Areas</span>
+                </div>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  checked={showBarcodeBoxes}
+                  onChange={(e) => setShowBarcodeBoxes(e.target.checked)}
+                />
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500" />
+                  <span className="text-sm text-gray-700">Barcode Boxes</span>
+                </div>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  checked={showUnknownItems}
+                  onChange={(e) => setShowUnknownItems(e.target.checked)}
+                />
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-amber-500" />
+                  <span className="text-sm text-gray-700">Unknown Items</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {activeDetection && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg border">
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold">Detected Products ({activeDetection.products.length})</h2>
+            </div>
+            <div className="divide-y">
+              {activeDetection.products.map((product: DetectionProduct, idx: number) => (
+                <div key={idx} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="font-semibold text-gray-900 text-lg">{product.item_code}</div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        Condition: {product.running_out_condition}
+                      </div>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        product.status === "in_stock"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {product.status === "in_stock" ? "In Stock" : "Running Out"}
+                    </span>
+                  </div>
+                  
+                  <div className="bg-gray-50 rounded p-4 mb-4 border border-gray-100">
+                    <div className="text-sm font-medium text-gray-700 mb-1">AI Reasoning:</div>
+                    <p className="text-sm text-gray-600 whitespace-pre-wrap">{product.ai_reasoning}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Product Area: </span>
+                      <span className="font-mono text-gray-700">{formatBBox(product.product_area_bounding_box)}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Barcode Box: </span>
+                      <span className="font-mono text-gray-700">{formatBBox(product.barcode_bounding_box)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {activeDetection.products.length === 0 && (
+                <div className="p-6 text-center text-gray-500">No products detected</div>
+              )}
+            </div>
+          </div>
+
+          {activeDetection.unknown_items.length > 0 && (
+            <div className="bg-white rounded-lg border">
+              <div className="px-6 py-4 border-b">
+                <h2 className="text-lg font-semibold">Unknown Items ({activeDetection.unknown_items.length})</h2>
+              </div>
+              <div className="divide-y">
+                {activeDetection.unknown_items.map((item: UnknownItem, idx: number) => (
+                  <div key={idx} className="p-6 hover:bg-gray-50 transition-colors">
+                    <div className="text-gray-900 mb-2">{item.description}</div>
+                    <div className="text-sm">
+                      <span className="text-gray-500">Bounding Box: </span>
+                      <span className="font-mono text-gray-700">{formatBBox(item.bounding_box)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

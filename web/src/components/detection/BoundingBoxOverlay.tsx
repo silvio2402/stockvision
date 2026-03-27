@@ -3,12 +3,16 @@ import { BoundingBox } from "../../types";
 
 const GEMINI_COORD_SPACE = 1000;
 
+export interface BoxItem {
+  bbox: BoundingBox;
+  label: string;
+  status?: "in_stock" | "running_out" | "unknown";
+  color?: string;
+  strokeStyle?: "solid" | "dashed" | "dotted";
+}
+
 interface BoundingBoxOverlayProps {
-  boundingBoxes: Array<{
-    bbox: BoundingBox;
-    label: string;
-    status?: "in_stock" | "running_out" | "unknown";
-  }>;
+  boundingBoxes: BoxItem[];
   imageNaturalWidth: number;
   imageNaturalHeight: number;
   containerWidth: number;
@@ -52,18 +56,25 @@ export function BoundingBoxOverlay({
       height={containerHeight}
     >
       {boundingBoxes.map((item, index) => {
-        const { bbox, label, status } = item;
+        const { bbox, label, status, color, strokeStyle = "solid" } = item;
         const x = offsetX + bbox.x * scaleX;
         const y = offsetY + bbox.y * scaleY;
         const w = bbox.width * scaleX;
         const h = bbox.height * scaleY;
 
-        const colors = {
+        const statusColors: Record<string, string> = {
           in_stock: "#10b981",
           running_out: "#ef4444",
           unknown: "#f59e0b",
         };
-        const strokeColor = colors[status || "in_stock"];
+        const strokeColor = color ?? statusColors[status || "in_stock"];
+
+        const dashArrayMap: Record<string, string | undefined> = {
+          solid: undefined,
+          dashed: "8 4",
+          dotted: "3 3",
+        };
+        const strokeDasharray = dashArrayMap[strokeStyle];
 
         return (
           <g key={index}>
@@ -75,6 +86,7 @@ export function BoundingBoxOverlay({
               fill="none"
               stroke={strokeColor}
               strokeWidth={2}
+              strokeDasharray={strokeDasharray}
               rx={4}
             />
             <rect
