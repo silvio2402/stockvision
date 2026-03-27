@@ -15,11 +15,8 @@ def scan_job():
     import asyncio
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    
-    try:
-        loop.run_until_complete(run_periodic_scan())
-    finally:
-        loop.close()
+
+    loop.run_until_complete(run_periodic_scan())
 
 
 async def run_periodic_scan():
@@ -31,11 +28,8 @@ def order_check_job():
     import asyncio
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    
-    try:
-        loop.run_until_complete(run_periodic_order_check())
-    finally:
-        loop.close()
+
+    loop.run_until_complete(run_periodic_order_check())
 
 
 async def run_periodic_order_check():
