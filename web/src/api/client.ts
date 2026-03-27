@@ -1,7 +1,5 @@
 import { Product, DetectionResult, Order, AppSettings, AuthResponse } from "../types";
 
-const API_URL = "http://localhost:8000";
-
 class ApiClient {
   private token: string | null = null;
 
@@ -32,7 +30,7 @@ class ApiClient {
       headers["Authorization"] = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    const response = await fetch(endpoint, {
       ...options,
       headers,
     });
@@ -60,7 +58,7 @@ class ApiClient {
     formData.append("image", file);
     formData.append("camera_id", cameraId);
 
-    const response = await fetch(`${API_URL}/api/camera/capture`, {
+    const response = await fetch("/api/camera/capture", {
       method: "POST",
       headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
       body: formData,
