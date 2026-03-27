@@ -31,7 +31,7 @@ async def run_detection_pipeline(image_path: str, camera_id: str = "camera-1") -
     settings_doc = await db.settings.find_one({"_id": "app_settings"})
     gemini_config = settings_doc.get("gemini_models", {}) if settings_doc else {}
     
-    barcodes = await detect_barcodes(image_path, gemini_config)
+    barcodes = await detect_barcodes(image_path)
     
     products_list = []
     unknown_count = 0
