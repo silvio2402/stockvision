@@ -1,27 +1,54 @@
 from google import genai
 from google.genai import types
+from pydantic import BaseModel, Field
 
 from ...config import settings
 from ...websocket import ws_manager
+
+
+class BoundingBox(BaseModel):
+    x: float
+    y: float
+    width: float
+    height: float
+
+
+class BarcodeItem(BaseModel):
+    bounding_box: BoundingBox
+
+
+class BarcodeDetectionResponse(BaseModel):
+    barcodes: list[BarcodeItem]
+
+
+class ProductArea(BaseModel):
+    item_code: str
+    bounding_box: BoundingBox
+
+
+class UnknownArea(BaseModel):
+    bounding_box: BoundingBox
+    description: str
+
+
+class ProductAreasResponse(BaseModel):
+    product_areas: list[ProductArea]
+    unknown_areas: list[UnknownArea]
+
+
+class StockEvaluationResponse(BaseModel):
+    is_running_out: bool
+    reasoning: str
+    confidence: float = Field(ge=0.0, le=1.0)
+
 
 async def detect_barcodes(image_path: str) -> list[dict]:
     client = genai.Client(api_key=settings.gemini_api_key)
 
     prompt = '''Analyze this image of a warehouse shelf. Detect ALL visible barcodes in the image.
 
-For each barcode found, return only the bounding box coordinates.
-DO NOT try to decode the barcode text - I will handle that separately.
-
-Return ONLY valid JSON in this exact format:
-{
-  "barcodes": [
-    {
-      "bounding_box": { "x": <left>, "y": <top>, "width": <w>, "height": <h> }
-    }
-  ]
-}
-
-If no barcodes are found, return: {"barcodes": []}'''
+For each barcode found, return only the bounding box coordinates using the 1000x1000 coordinate system where 0,0 is top-left.
+DO NOT try to decode the barcode text - that will be handled separately.'''
 
     await ws_manager.broadcast("scan_progress", {"step": "barcode_detection", "detail": "Detecting barcode bounding boxes with Gemini"})
 
@@ -33,12 +60,12 @@ If no barcodes are found, return: {"barcodes": []}'''
         contents=[prompt, types.Part.from_bytes(data=image_data, mime_type="image/jpeg")],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
+            response_schema=BarcodeDetectionResponse,
         ),
     )
 
-    import json
-    result = json.loads(response.text)
-    return result.get("barcodes", [])
+    result = response.parsed
+    return [barcode.model_dump() for barcode in result.barcodes]
 
 
 async def detect_product_areas(image_path: str, products: list[dict]) -> dict:
@@ -56,27 +83,11 @@ async def detect_product_areas(image_path: str, products: list[dict]) -> dict:
 
 {products_desc}
 
-For each product, identify the FULL AREA on the shelf where that product type is stored/displayed.
+For each product, identify the FULL AREA on the shelf where that product type is stored/displayed using the 1000x1000 coordinate system where 0,0 is top-left.
 This area should encompass ALL units of that product visible on the shelf, not just the barcode.
 If a product appears to be completely out of stock, estimate where it would be based on its barcode position and neighboring products.
 
-Also identify any areas with products that don't match any of the listed products above. Mark these as "unknown".
-
-Return ONLY valid JSON:
-{{
-  "product_areas": [
-    {{
-      "item_code": "string",
-      "bounding_box": {{ "x": <left>, "y": <top>, "width": <w>, "height": <h> }}
-    }}
-  ],
-  "unknown_areas": [
-    {{
-      "bounding_box": {{ "x": <left>, "y": <top>, "width": <w>, "height": <h> }},
-      "description": "brief description of what's there"
-    }}
-  ]
-}}'''
+Also identify any areas with products that don't match any of the listed products above. Mark these as "unknown" and provide a brief description.'''
 
     await ws_manager.broadcast("scan_progress", {"step": "product_area_detection", "detail": "Detecting product areas"})
 
@@ -88,12 +99,15 @@ Return ONLY valid JSON:
         contents=[prompt, types.Part.from_bytes(data=image_data, mime_type="image/jpeg")],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
+            response_schema=ProductAreasResponse,
         ),
     )
 
-    import json
-    result = json.loads(response.text)
-    return result
+    result = response.parsed
+    return {
+        "product_areas": [area.model_dump() for area in result.product_areas],
+        "unknown_areas": [area.model_dump() for area in result.unknown_areas],
+    }
 
 
 async def evaluate_stock_level(image_path: str, product: dict) -> dict:
@@ -111,13 +125,7 @@ Analyze carefully:
 - Look at the quantity of product visible
 - Consider the specific condition described
 - Be conservative — only mark as running out if the condition is clearly met
-
-Return ONLY valid JSON:
-{{
-  "is_running_out": true/false,
-  "reasoning": "Brief explanation of what you see and why you made this determination",
-  "confidence": 0.0-1.0
-}}'''
+- Provide a confidence score between 0.0 and 1.0'''
 
     with open(image_path, "rb") as f:
         image_data = f.read()
@@ -127,9 +135,9 @@ Return ONLY valid JSON:
         contents=[prompt, types.Part.from_bytes(data=image_data, mime_type="image/jpeg")],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
+            response_schema=StockEvaluationResponse,
         ),
     )
 
-    import json
-    result = json.loads(response.text)
-    return result
+    result = response.parsed
+    return result.model_dump()
