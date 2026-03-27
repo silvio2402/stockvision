@@ -2,8 +2,6 @@ import aiosmtplib
 from email.message import EmailMessage
 from datetime import datetime
 
-from ..order import Order
-
 
 async def send_order_email(order: dict, db) -> bool:
     settings_doc = await db.settings.find_one({"_id": "app_settings"})

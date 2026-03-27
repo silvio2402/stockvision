@@ -10,7 +10,7 @@ from .routers import (
     products,
     detections,
     orders,
-    settings,
+    settings as settings_router,
     ws,
 )
 from .services.data.erp import ERPClient
@@ -61,7 +61,7 @@ app.include_router(camera.router)
 app.include_router(products.router)
 app.include_router(detections.router)
 app.include_router(orders.router)
-app.include_router(settings.router)
+app.include_router(settings_router.router)
 app.include_router(ws.router)
 
 

@@ -1,7 +1,7 @@
 from google import genai
 from google.genai import types
 
-from ..config import settings
+from ...config import settings
 from ...websocket import ws_manager
 
 async def detect_barcodes(image_path: str) -> list[dict]:

@@ -57,7 +57,7 @@ async def update_settings(
     if "password_hash" in update_dict:
         del update_dict["password_hash"]
 
-    if "gemini_models" is None:
+    if update_dict.get("gemini_models") is None:
         del update_dict["gemini_models"]
 
     if update_dict:

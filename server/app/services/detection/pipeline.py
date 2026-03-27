@@ -1,11 +1,9 @@
 import asyncio
 import time
-import ast
 from datetime import datetime
 
 from PIL import Image
 
-from ..data.repository import get_product_repository
 from ...websocket import ws_manager
 from ...dependencies import get_db
 from ...models.detection import DetectionResult, DetectionProduct, UnknownItem
@@ -16,11 +14,16 @@ from .image import decode_barcode, crop_bbox
 
 async def run_detection_pipeline(image_path: str, camera_id: str = "camera-1") -> str:
     start_time = time.time()
-    
+
     await ws_manager.broadcast("scan_started", {"camera_id": camera_id})
-    
+
     db = await get_db()
-    repo = await get_product_repository(db)
+
+    from ...main import app
+    if not hasattr(app.state, "product_repo") or not app.state.product_repo:
+        raise RuntimeError("Product repository not initialized. Please check server startup.")
+
+    repo = app.state.product_repo
     
     img = Image.open(image_path)
     original_image = img
@@ -74,39 +77,6 @@ async def run_detection_pipeline(image_path: str, camera_id: str = "camera-1") -
     unknown_items = []
     
     for prod in products_list:
-        item_code = prod["item_code"]
-        product = await repo.get_product(item_code) or ProductData(
-            item_code=item_code,
-            barcode_value=item_code,
-            name=prod["name"],
-            description=prod["description"]
-        )
-        
-        area_bbox = product_area_map.get(item_code, {}).get("bounding_box", prod["barcode_bbox"])
-        
-        if product.running_out_condition and "running_out" in areas.get("product_areas", [{}]):
-            crop_bio = crop_bbox(image_path, area_bbox)
-            
-            temp_path = f"/tmp/temp_{item_code}.jpg"
-            Image.open(crop_bio).save(temp_path)
-            
-            evaluation = await evaluate_stock_level(temp_path, {
-                "name": product.name,
-                "description": product.description,
-                "running_out_condition": product.running_out_condition
-            })
-            
-            status = "running_out" if evaluation.get("is_running_out") else "in_stock"
-            reasoning = evaluation.get("reasoning", "")
-            
-            import os
-            os.remove(temp_path)
-        else:
-            else:
-            status = "in_stock"
-            reasoning = "Visual check indicates adequate stock"
-        
-        for prod in products_list:
         item_code = prod["item_code"]
         product = await repo.get_product(item_code) or ProductData(
             item_code=item_code,
