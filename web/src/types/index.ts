@@ -1,8 +1,8 @@
 export type BoundingBox = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  ymin: number;
+  xmin: number;
+  ymax: number;
+  xmax: number;
 };
 
 export type ProductStatus = "in_stock" | "running_out" | "unknown" | "not_detected";

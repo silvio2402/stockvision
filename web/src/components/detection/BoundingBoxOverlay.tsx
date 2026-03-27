@@ -57,10 +57,10 @@ export function BoundingBoxOverlay({
     >
       {boundingBoxes.map((item, index) => {
         const { bbox, label, status, color, strokeStyle = "solid" } = item;
-        const x = offsetX + bbox.x * scaleX;
-        const y = offsetY + bbox.y * scaleY;
-        const w = bbox.width * scaleX;
-        const h = bbox.height * scaleY;
+        const x = offsetX + bbox.xmin * scaleX;
+        const y = offsetY + bbox.ymin * scaleY;
+        const w = (bbox.xmax - bbox.xmin) * scaleX;
+        const h = (bbox.ymax - bbox.ymin) * scaleY;
 
         const statusColors: Record<string, string> = {
           in_stock: "#10b981",

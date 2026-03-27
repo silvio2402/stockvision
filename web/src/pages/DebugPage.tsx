@@ -78,7 +78,7 @@ export function DebugPage() {
   }
 
   const formatBBox = (bbox: BoundingBox) => {
-    return `(${Math.round(bbox.x)}, ${Math.round(bbox.y)}, ${Math.round(bbox.width)}, ${Math.round(bbox.height)})`;
+    return `(ymin: ${Math.round(bbox.ymin)}, xmin: ${Math.round(bbox.xmin)}, ymax: ${Math.round(bbox.ymax)}, xmax: ${Math.round(bbox.xmax)})`;
   };
 
   return (
