@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/settings", tags=["settings"])
 @router.get("", response_model=AppSettingsResponse)
 async def get_settings(
     user: str = Depends(get_current_user),
-    db = Depends(get_db),
+    db=Depends(get_db),
 ):
     doc = await db.settings.find_one({"_id": "app_settings"})
     if doc is None:
@@ -26,8 +26,8 @@ async def get_settings(
             "gemini_models": {
                 "barcode_detection": "gemini-3-flash-preview",
                 "product_area_detection": "gemini-3-flash-preview",
-                "stock_evaluation": "gemini-3-flash-preview"
-            }
+                "stock_evaluation": "gemini-3-flash-preview",
+            },
         }
         await db.settings.insert_one(doc)
 
@@ -39,7 +39,7 @@ async def get_settings(
         smtp_host=doc.get("smtp_host", ""),
         smtp_port=doc.get("smtp_port", 587),
         smtp_user=doc.get("smtp_user", ""),
-        gemini_models=GeminiModels(**doc.get("gemini_models", {}))
+        gemini_models=GeminiModels(**doc.get("gemini_models", {})),
     )
 
 
@@ -47,7 +47,7 @@ async def get_settings(
 async def update_settings(
     update: AppSettingsUpdate,
     user: str = Depends(get_current_user),
-    db = Depends(get_db),
+    db=Depends(get_db),
 ):
     doc = await db.settings.find_one({"_id": "app_settings"})
     if doc is None:
@@ -63,9 +63,7 @@ async def update_settings(
 
     if update_dict:
         await db.settings.update_one(
-            {"_id": "app_settings"},
-            {"$set": update_dict},
-            upsert=True
+            {"_id": "app_settings"}, {"$set": update_dict}, upsert=True
         )
 
     return await get_settings(user, db)

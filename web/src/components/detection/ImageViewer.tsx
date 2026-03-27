@@ -1,13 +1,16 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useLatestDetection } from "../../hooks/useDetections";
-import { formatRelativeTime } from "../../lib/utils";
-import { BoundingBox } from "../../types";
-import { BoundingBoxOverlay } from "./BoundingBoxOverlay";
+import React, { useRef, useState, useEffect } from 'react';
+import { useLatestDetection } from '../../hooks/useDetections';
+import { formatRelativeTime } from '../../lib/utils';
+import { BoundingBox } from '../../types';
+import { BoundingBoxOverlay } from './BoundingBoxOverlay';
 
 export function ImageViewer() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-  const [imageNaturalSize, setImageNaturalSize] = useState({ width: 0, height: 0 });
+  const [imageNaturalSize, setImageNaturalSize] = useState({
+    width: 0,
+    height: 0,
+  });
   const { data: detection, isLoading, error } = useLatestDetection();
 
   useEffect(() => {
@@ -21,8 +24,8 @@ export function ImageViewer() {
     };
 
     updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
   }, []);
 
   if (isLoading) {
@@ -43,8 +46,8 @@ export function ImageViewer() {
 
   const boxes = detection.products.map((p) => ({
     bbox: p.product_area_bounding_box,
-    label: p.item_code,
-    status: p.status as "in_stock" | "running_out",
+    label: `${p.item_code} - ${p.status}`,
+    status: p.status as 'in_stock' | 'running_out',
   }));
 
   const imageUrl = `/api/images/${detection.image_path}`;
@@ -54,14 +57,19 @@ export function ImageViewer() {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Latest Shelf Image</h3>
         <span className="text-sm text-gray-500">
-          Last scan: {formatRelativeTime(detection.timestamp)}
+          Last scan:{' '}
+          {formatRelativeTime(
+            new Date(detection.timestamp + 'Z').toLocaleString('en-US', {
+              timeZone: 'Europe/Berlin',
+            }),
+          )}
         </span>
       </div>
-      
+
       <div
         ref={containerRef}
         className="relative bg-gray-900 rounded-lg overflow-hidden"
-        style={{ height: "500px" }}
+        style={{ height: '500px' }}
       >
         <img
           src={imageUrl}
@@ -69,7 +77,10 @@ export function ImageViewer() {
           className="w-full h-full object-contain"
           onLoad={(e) => {
             const img = e.currentTarget;
-            setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+            setImageNaturalSize({
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+            });
             if (containerRef.current) {
               setContainerSize({
                 width: containerRef.current.clientWidth,
@@ -78,7 +89,7 @@ export function ImageViewer() {
             }
           }}
         />
-        
+
         {detection.products.length > 0 && imageNaturalSize.width > 0 && (
           <BoundingBoxOverlay
             boundingBoxes={boxes}
@@ -89,7 +100,7 @@ export function ImageViewer() {
           />
         )}
       </div>
-      
+
       <div className="flex items-center gap-6 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-green-500" />

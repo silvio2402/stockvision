@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     mongodb_database: str = "stockvision"
 
     # ERP (Make.com webhooks)
-    erp_product_url: str = "https://hook.eu1.make.celonis.com/79j69cp1aesv98zwozwgpduz86hk71rr"
-    erp_products_list_url: str = "https://hook.eu1.make.celonis.com/2dkavnxbe1o4rns7k75r1ej9yqflfa7x"
+    erp_product_url: str = ""
+    erp_products_list_url: str = ""
 
     # SMTP defaults (overridden by DB settings)
     smtp_host: str = ""
