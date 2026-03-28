@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useLatestDetection, useDetections, useDetection, useTriggerScan } from "../hooks/useDetections";
+import { useLatestDetection, useDetections, useDetection, useTriggerScan, useCaptureImage } from "../hooks/useDetections";
 import { BoundingBoxOverlay, BoxItem } from "../components/detection/BoundingBoxOverlay";
 import { DetectionResult, DetectionProduct, UnknownItem, BoundingBox } from "../types";
 import { Button } from "../components/layout/ui";
@@ -16,6 +16,7 @@ export function DebugPage() {
   const { data: detectionsList } = useDetections(20);
   const { data: selectedDetection, isLoading: isLoadingSelected } = useDetection(selectedDetectionId);
   const triggerScan = useTriggerScan();
+  const captureImage = useCaptureImage();
 
   const activeDetection = selectedDetectionId ? selectedDetection : latestDetection;
   const isLoading = selectedDetectionId ? isLoadingSelected : isLoadingLatest;
@@ -29,7 +30,7 @@ export function DebugPage() {
     if (!file) return;
 
     try {
-      await triggerScan.mutateAsync({ file } as any);
+      await captureImage.mutateAsync({ file, cameraId: "camera-1" });
       setSelectedDetectionId(null); // Switch to latest
     } catch (error) {
       console.error("Upload failed:", error);
@@ -62,7 +63,7 @@ export function DebugPage() {
       activeDetection.products.forEach((p: DetectionProduct) => {
         boxes.push({
           bbox: p.product_area_bounding_box,
-          label: `${p.item_code} area`,
+          label: p.item_code,
           status: p.status,
           strokeStyle: "solid"
         });
@@ -72,7 +73,7 @@ export function DebugPage() {
       activeDetection.products.forEach((p: DetectionProduct) => {
         boxes.push({
           bbox: p.barcode_bounding_box,
-          label: `${p.item_code} barcode`,
+          label: p.item_code,
           color: "#3b82f6",
           strokeStyle: "dashed"
         });

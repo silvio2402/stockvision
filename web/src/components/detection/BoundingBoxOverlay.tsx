@@ -76,6 +76,9 @@ export function BoundingBoxOverlay({
         };
         const strokeDasharray = dashArrayMap[strokeStyle];
 
+        const isNearTop = y < 28;
+        const labelY = isNearTop ? y + 4 : y - 28;
+
         return (
           <g key={index}>
             <rect
@@ -89,23 +92,20 @@ export function BoundingBoxOverlay({
               strokeDasharray={strokeDasharray}
               rx={4}
             />
-            <rect
+            <foreignObject
               x={x}
-              y={y - 24}
-              width={Math.max(w, 100)}
-              height={24}
-              fill={strokeColor}
-              rx={4}
-            />
-            <text
-              x={x + 8}
-              y={y - 8}
-              fill="white"
-              fontSize="12"
-              fontWeight="600"
+              y={labelY}
+              width={Math.max(w, 200)}
+              height={30}
+              className="overflow-visible pointer-events-none"
             >
-              {label}
-            </text>
+              <div
+                className="inline-flex items-center px-2 py-1 text-xs font-bold text-white rounded shadow-sm whitespace-nowrap"
+                style={{ backgroundColor: strokeColor }}
+              >
+                {label}
+              </div>
+            </foreignObject>
           </g>
         );
       })}
