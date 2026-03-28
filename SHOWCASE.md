@@ -48,14 +48,23 @@ Zero proprietary hardware required.
 **Image of the camera setup pointing to the products:**
 ![alt text](image-6.png)
 
-## 🛠️ Configuration & Core Features
-Built for both warehouse floors and developer debugging.
-- **Developer Tools**: Toggle dev mode to reveal raw AI reasoning, the Insights Console, and pipeline execution logs.
-- **Mobile-Optimized**: Fully responsive, touch-friendly UI for scanning and managing inventory on the go.
-- **Secure Access**: Password-protected login, secure session management, and environment-based secrets.
+## 🛠️ Developer Tools & Configuration
+Built for deep debugging and customization.
+- **Insights & Logs**: Toggle dev mode to reveal raw AI reasoning, the Insights Console, and pipeline execution logs.
+- **Granular Settings**: Adjust scan cadence, email SMTP configurations, and select specific Gemini models via the UI.
 
 ![alt text](image-4.png)
 
+## 📱 Mobile-First Design
+Manage the warehouse directly from the floor.
+- **Touch-Optimized**: Fully responsive UI designed for smartphones and tablets.
+- **Remote Capture**: The web-based camera client runs flawlessly on mobile browsers without app installations.
+
 ![alt text](image-7.png)
+
+## 🔒 Security & Authentication
+Protecting your inventory data.
+- **Secure Access**: Simple, password-protected login with JWT-based session management.
+- **Safe Configuration**: API credentials and secrets are strictly managed through environment variables.
 
 ![alt text](image-8.png)
