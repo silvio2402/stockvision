@@ -30,7 +30,7 @@ Adaptable inventory management and supplier ordering.
 - **Smart Filtering**: Filter inventory by status and toggle "Needs Review" to surface items requiring human attention.
 - **Inline Editing**: Quickly update reorder conditions, quantities, or flag items.
 - **Data Lineage**: Badges differentiate ERP-imported products from AI-discovered "unknown" items.
-- **Manual vs. Auto Reordering**: 
+- **Manual vs. Auto Reordering (configurable in the settings)**: 
   - *Manual (Default)*: AI flags low stock → Creates "Pending" order → Manager approves via UI.
   - *Fully Automated*: AI flags low stock → Auto-generates order → Dispatches SMTP email to supplier.
 
