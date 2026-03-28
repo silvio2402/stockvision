@@ -26,9 +26,9 @@
   {
     "item_code": "DYMO001",
     "barcode_value": "DYMO001",
-    "name": "Dymo Papier",
-    "description": "Dymo Etikettenpapier Rollen",
-    "running_out_condition": "Less than 2 rolls visible",
+    "name": "Moderationskarten",
+    "description": "Moderationskarten Rechteckig",
+    "running_out_condition": "Less than estimated 50 pages visible",
     "order_amount": 6
   },
   {
