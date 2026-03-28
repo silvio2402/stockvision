@@ -18,7 +18,7 @@ Monitor warehouse health at a glance.
 Eliminate manual stock counting with visual AI.
 - **Visual Detection (Gemini)**: Maps `1000x1000` bounding boxes around barcodes and product areas on high-res images.
 - **Insights Console**: Visual debug mode overlaying bounding boxes, known products, and unknown items directly on the shelf image.
-- **Natural Language Rules**: Define low-stock triggers in plain English (e.g., *"Less than 5 boxes left"* or *"Only the bottom row is visible"*).
+- **Natural Language Rules**: Define low-stock triggers in plain English (e.g., *"Less than 5 boxes left"* or *"Neon green bottom is visible"*).
 - **Contextual Evaluation**: AI compares the cropped product image against the language rule to determine stock status, returning a confidence score and reasoning.
 
 ![alt text](image-1.png)
