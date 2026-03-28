@@ -31,6 +31,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         queryClient.invalidateQueries({ queryKey: ["products"] });
       } else if (message.type === "order_created") {
         queryClient.invalidateQueries({ queryKey: ["orders"] });
+      } else if (message.type === "job_status_update") {
+        queryClient.invalidateQueries({ queryKey: ["scanJobs"] });
       }
     } catch (e) {
       console.error("Failed to parse WebSocket message:", e);

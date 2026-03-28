@@ -15,7 +15,7 @@ const navItems: NavItem[] = [
   { path: "/products", icon: Package, label: "Products" },
   { path: "/orders", icon: ClipboardCheck, label: "Orders" },
   { path: "/settings", icon: Settings, label: "Settings" },
-  { path: "/debug", icon: Bug, label: "Debug" },
+  { path: "/insights", icon: Bug, label: "Insights" },
 ];
 
 export function Header() {

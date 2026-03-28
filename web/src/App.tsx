@@ -10,7 +10,7 @@ import { CameraPage } from "./pages/CameraPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import { SettingsPage } from "./pages/SettingsPage";
-import { DebugPage } from "./pages/DebugPage";
+import { InsightsPage } from "./pages/InsightsPage";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -76,7 +76,7 @@ function App() {
                               <Route path="/products" element={<ProductsPage />} />
                               <Route path="/orders" element={<OrdersPage />} />
                               <Route path="/settings" element={<SettingsPage />} />
-                              <Route path="/debug" element={<DebugPage />} />
+                              <Route path="/insights" element={<InsightsPage />} />
                               <Route path="*" element={<Navigate to="/" replace />} />
                             </Routes>
                           </AppContent>

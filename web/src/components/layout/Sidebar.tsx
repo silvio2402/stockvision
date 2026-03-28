@@ -15,7 +15,7 @@ const navItems: NavItem[] = [
   { path: "/products", icon: Package, label: "Products" },
   { path: "/orders", icon: ClipboardCheck, label: "Orders" },
   { path: "/settings", icon: Settings, label: "Settings" },
-  { path: "/debug", icon: Bug, label: "Debug" },
+  { path: "/insights", icon: Bug, label: "Insights" },
 ];
 
 export function Sidebar() {
@@ -24,7 +24,7 @@ export function Sidebar() {
   const { data: settings } = useSettings();
 
   const filteredNavItems = navItems.filter(item => {
-    if (item.path === "/debug") {
+    if (item.path === "/insights") {
       return settings?.developer_mode;
     }
     return true;

@@ -235,7 +235,7 @@ export function SettingsPage() {
             <div>
               <div className="font-medium text-gray-900">Developer Mode</div>
               <div className="text-sm text-gray-600">
-                Show debugging tools and experimental features
+                Show insights tools and experimental features
               </div>
             </div>
           </label>
