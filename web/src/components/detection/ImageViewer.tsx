@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { useLatestDetection, useTriggerScan } from '../../hooks/useDetections';
+import { useLatestDetection, useTriggerScan, useScanJobs } from '../../hooks/useDetections';
 import { formatRelativeTime } from '../../lib/utils';
 import { BoundingBox } from '../../types';
 import { BoundingBoxOverlay } from './BoundingBoxOverlay';
@@ -14,11 +14,15 @@ export function ImageViewer() {
     height: 0,
   });
   const { data: detection, isLoading, error } = useLatestDetection();
+  const { data: scanJobs } = useScanJobs(1);
   const triggerScan = useTriggerScan();
 
   const handleScan = () => {
     triggerScan.mutate("camera-1");
   };
+
+  const isJobRunning = scanJobs?.some(job => job.status === "running") || false;
+  const isScanning = triggerScan.isPending || isJobRunning;
 
   useEffect(() => {
     const updateSize = () => {
@@ -48,9 +52,9 @@ export function ImageViewer() {
       <div className="bg-gray-100 rounded-lg aspect-video flex items-center justify-center relative">
         <div className="text-gray-500">No Detection Data Available</div>
         <div className="absolute top-4 right-4 z-10">
-          <Button onClick={handleScan} disabled={triggerScan.isPending} className="shadow-md bg-blue-600 text-white hover:bg-blue-700 border-none">
-            <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">{triggerScan.isPending ? "Scanning..." : "Scan Now"}</span>
+          <Button onClick={handleScan} disabled={isScanning} className="shadow-md bg-blue-600 text-white hover:bg-blue-700 border-none">
+            <RefreshCw className={`h-4 w-4 mr-2 ${isScanning ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">{isScanning ? "Scanning..." : "Scan Now"}</span>
           </Button>
         </div>
       </div>
@@ -77,17 +81,17 @@ export function ImageViewer() {
 
       <div
         ref={containerRef}
-        className="relative bg-gray-900 rounded-lg overflow-hidden min-h-[300px]"
+        className="relative bg-gray-900 rounded-lg overflow-hidden group min-h-[300px]"
         style={{ height: '500px' }}
       >
         <div className="absolute top-4 right-4 z-10">
           <Button 
             onClick={handleScan} 
-            disabled={triggerScan.isPending}
+            disabled={isScanning}
             className="shadow-lg bg-blue-600 hover:bg-blue-700 text-white border-none"
           >
-            <RefreshCw className={`h-4 w-4 sm:mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">{triggerScan.isPending ? "Scanning..." : "Scan Now"}</span>
+            <RefreshCw className={`h-4 w-4 sm:mr-2 ${isScanning ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">{isScanning ? "Scanning..." : "Scan Now"}</span>
           </Button>
         </div>
 

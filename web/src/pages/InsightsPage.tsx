@@ -22,6 +22,9 @@ export function InsightsPage() {
   const activeDetection = selectedDetectionId ? selectedDetection : latestDetection;
   const isLoading = selectedDetectionId ? isLoadingSelected : isLoadingLatest;
 
+  const isJobRunning = scanJobs?.some((job: ScanJob) => job.status === "running") || false;
+  const isScanning = triggerScan.isPending || isJobRunning;
+
   const handleScan = () => {
     triggerScan.mutate("camera-1");
   };
@@ -111,11 +114,12 @@ export function InsightsPage() {
               accept="image/*"
               onChange={handleUpload}
               className="hidden"
+              disabled={captureImage.isPending}
             />
           </label>
-          <Button onClick={handleScan} disabled={triggerScan.isPending}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
-            {triggerScan.isPending ? "Scanning..." : "Trigger Scan"}
+          <Button onClick={handleScan} disabled={isScanning}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isScanning ? "animate-spin" : ""}`} />
+            {isScanning ? "Scanning..." : "Trigger Scan"}
           </Button>
         </div>
       </div>
@@ -128,7 +132,7 @@ export function InsightsPage() {
             </h3>
           </div>
           <div className="divide-y max-h-48 overflow-y-auto">
-            {scanJobs.map((job) => (
+            {scanJobs.map((job: ScanJob) => (
               <div key={job.id} className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {job.status === "running" && <RefreshCw className="h-5 w-5 text-blue-500 animate-spin" />}
