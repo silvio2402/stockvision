@@ -1,6 +1,9 @@
 import aiosmtplib
 from email.message import EmailMessage
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def send_order_email(order: dict, db) -> bool:
@@ -49,9 +52,10 @@ StockVision Automated Stock Taking
             hostname=smtp_host,
             port=smtp_port,
             username=smtp_user,
-            password=smtp_password,
-            start_tls=True
-        )
+password=smtp_password,
+                start_tls=True
+            )
         return True
-    except Exception:
+    except Exception as e:
+        logger.error(f"Failed to send order email: {e}")
         return False

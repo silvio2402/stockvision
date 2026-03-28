@@ -5,42 +5,27 @@ import { ClipboardCheck, CheckCircle, XCircle, Clock, Circle } from "lucide-reac
 import { OrderStatus } from "../types";
 import { cn, formatDate } from "../lib/utils";
 
+const orderStatusConfig: any = {
+  pending_approval: { icon: Clock, color: "bg-amber-100 text-amber-700", label: "Pending Approval" },
+  approved: { icon: CheckCircle, color: "bg-green-100 text-green-700", label: "Approved" },
+  declined: { icon: XCircle, color: "bg-red-100 text-red-700", label: "Declined" },
+  ordered: { icon: ClipboardCheck, color: "bg-blue-100 text-blue-700", label: "Ordered" },
+};
+
 export function OrdersPage() {
   const { data: orders, isLoading } = useOrders();
   const approveOrder = useApproveOrder();
   const declineOrder = useDeclineOrder();
 
-  const handleApprove = async (orderId: string) => {
-    try {
-      await approveOrder.mutateAsync(orderId);
-    } catch (error) {
-      console.error("Failed to approve order:", error);
-      alert("Failed to approve order");
-    }
-  };
+  const handleApprove = (id: string) => approveOrder.mutate(id);
+  const handleDecline = (id: string) => declineOrder.mutate(id);
 
-  const handleDecline = async (orderId: string) => {
-    try {
-      await declineOrder.mutateAsync(orderId);
-    } catch (error) {
-      console.error("Failed to decline order:", error);
-      alert("Failed to decline order");
-    }
-  };
-
-  const statusConfig: Record<OrderStatus, { icon: React.ElementType; color: string; label: string }> = {
-    pending_approval: { icon: Clock, color: "bg-amber-100 text-amber-700", label: "Pending Approval" },
-    approved: { icon: CheckCircle, color: "bg-blue-100 text-blue-700", label: "Approved" },
-    declined: { icon: XCircle, color: "bg-gray-100 text-gray-700", label: "Declined" },
-    ordered: { icon: Circle, color: "bg-green-100 text-green-700", label: "Ordered" },
-  };
+  const pendingOrders = orders?.filter((o: any) => o.status === "pending_approval") || [];
+  const otherOrders = orders?.filter((o: any) => o.status !== "pending_approval") || [];
 
   if (isLoading) {
     return <div className="p-6">Loading orders...</div>;
   }
-
-  const pendingOrders = orders?.filter((o) => o.status === "pending_approval") || [];
-  const otherOrders = orders?.filter((o) => o.status !== "pending_approval") || [];
 
   if (!orders || orders.length === 0) {
     return (
@@ -50,9 +35,7 @@ export function OrdersPage() {
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-900">No orders found</h3>
-          <p className="text-gray-600 max-w-sm">
-            Everything is up to date! New orders will appear here when stock levels run low.
-          </p>
+          <p className="text-gray-500">There are no orders to display at this time.</p>
         </div>
       </div>
     );
@@ -60,31 +43,16 @@ export function OrdersPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-end">
-        {pendingOrders.length > 0 && (
-          <div className="flex items-center gap-2 bg-amber-100 text-amber-700 px-4 py-2 rounded-lg">
-            <ClipboardCheck className="h-4 w-4" />
-            <span className="font-medium">{pendingOrders.length} pending approval</span>
-          </div>
-        )}
-      </div>
-
       {pendingOrders.length > 0 && (
         <OrderSection
-          title="Pending Orders"
+          title="Pending Approval"
           orders={pendingOrders}
-          statusConfig={statusConfig}
           onApprove={handleApprove}
           onDecline={handleDecline}
-          showActions
+          showActions={true}
         />
       )}
-
-      <OrderSection
-        title="Order History"
-        orders={otherOrders}
-        statusConfig={statusConfig}
-      />
+      <OrderSection title="Order History" orders={otherOrders} />
     </div>
   );
 }
@@ -92,7 +60,6 @@ export function OrdersPage() {
 interface OrderSectionProps {
   title: string;
   orders: any[];
-  statusConfig: Record<OrderStatus, { icon: React.ElementType; color: string; label: string }>;
   onApprove?: (id: string) => void;
   onDecline?: (id: string) => void;
   showActions?: boolean;
@@ -101,15 +68,10 @@ interface OrderSectionProps {
 function OrderSection({
   title,
   orders,
-  statusConfig,
   onApprove,
   onDecline,
   showActions = false,
 }: OrderSectionProps) {
-  if (orders.length === 0) {
-    return null;
-  }
-
   return (
     <div className="bg-white rounded-lg border overflow-hidden">
       <div className="px-6 py-4 bg-gray-50 border-b">
@@ -119,9 +81,8 @@ function OrderSection({
       <div className="divide-y">
         {orders.map((order) => (
           <OrderCard
-            key={order.id}
+            key={(order as any).id}
             order={order}
-            statusConfig={statusConfig}
             onApprove={onApprove}
             onDecline={onDecline}
             showActions={showActions}
@@ -132,70 +93,41 @@ function OrderSection({
   );
 }
 
-interface OrderCardProps {
-  order: any;
-  onApprove?: (id: string) => void;
-  onDecline?: (id: string) => void;
-  showActions?: boolean;
-  statusConfig: Record<OrderStatus, { icon: React.ElementType; color: string; label: string }>;
-}
-
-function OrderCard({ order, statusConfig, onApprove, onDecline, showActions }: OrderCardProps) {
-  const statusInfo = statusConfig[order.status as OrderStatus];
+function OrderCard({ order, onApprove, onDecline, showActions = false }: any) {
+  const o = order as any;
+  const statusInfo = orderStatusConfig[o.status as OrderStatus];
   const StatusIcon = statusInfo.icon;
 
   return (
     <div className="p-6 hover:bg-gray-50 transition-colors">
-      <div className="flex items-start gap-4">
-        <div className={cn("p-3 rounded-lg", statusInfo.color)}>
-          <StatusIcon className="h-5 w-5" />
-        </div>
-
-        <div className="flex-1">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="font-semibold text-gray-900">Order #{order.id.slice(-6)}</div>
-              <div className="text-sm text-gray-600">
-                {formatDate(order.created_at)}
-              </div>
-            </div>
-            <span className={cn("px-3 py-1 rounded-full text-xs font-medium", statusInfo.color)}>
-              {statusInfo.label}
-            </span>
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="font-semibold text-gray-900 text-lg">Order #{o.id.slice(-6)}</div>
+          <div className="text-sm text-gray-500 mt-1">
+            Created: {formatDate(o.created_at)}
           </div>
-
-          <div className="mt-4 space-y-2">
-            {order.items.map((item: any, index: number) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <div>
-                  <span className="font-medium">{item.name}</span>
-                  <span className="text-gray-600 ml-2">({item.item_code})</span>
-                </div>
-                <span className="bg-gray-100 px-2 py-1 rounded text-gray-700">
-                  x{item.order_amount}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {showActions && onApprove && onDecline && (
-            <div className="mt-4 flex items-center gap-2">
-              <Button
-                size="sm"
-                onClick={() => onApprove(order.id)}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <CheckCircle className="h-4 w-4 mr-1" />
-                Approve & Send
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => onDecline(order.id)}>
-                <XCircle className="h-4 w-4 mr-1" />
-                Decline
-              </Button>
-            </div>
-          )}
         </div>
+        <span className={cn("px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1", statusInfo.color)}>
+          <StatusIcon className="h-3 w-3" />
+          {statusInfo.label}
+        </span>
       </div>
+
+      <div className="space-y-2 mb-4">
+        {(o.items as any[]).map((item: any) => (
+          <div key={item.item_code} className="flex justify-between text-sm text-gray-600">
+            <span>{item.name}</span>
+            <span>x{item.order_amount}</span>
+          </div>
+        ))}
+      </div>
+
+      {showActions && o.status === "pending_approval" && (
+        <div className="flex items-center gap-2 pt-2">
+          <Button variant="secondary" size="sm" onClick={() => onApprove?.(o.id)}>Approve</Button>
+          <Button variant="secondary" size="sm" onClick={() => onDecline?.(o.id)}>Decline</Button>
+        </div>
+      )}
     </div>
   );
 }

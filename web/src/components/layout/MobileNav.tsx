@@ -1,21 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Camera, Package, ClipboardCheck, Settings, Bug } from "lucide-react";
 import { useSettings } from "../../hooks/useSettings";
-
-interface NavItem {
-  path: string;
-  icon: React.ElementType;
-  label: string;
-}
-
-const navItems: NavItem[] = [
-  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/products", icon: Package, label: "Products" },
-  { path: "/orders", icon: ClipboardCheck, label: "Orders" },
-  { path: "/settings", icon: Settings, label: "Settings" },
-  { path: "/insights", icon: Bug, label: "Insights" },
-];
+import { navItems, type NavItem } from "../../lib/nav";
 
 export function MobileNav() {
   const location = useLocation();

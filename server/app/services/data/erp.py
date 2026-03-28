@@ -1,4 +1,7 @@
 import httpx
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ERPClient:
@@ -22,7 +25,8 @@ class ERPClient:
                         return data[0]
                     return data
                 return None
-            except Exception:
+            except Exception as e:
+                logger.error(f"Failed to fetch product {item_code}: {e}")
                 return None
     
     async def get_all_products(self) -> list[dict]:
@@ -32,5 +36,6 @@ class ERPClient:
                 if response.status_code == 200:
                     return response.json()
                 return []
-            except Exception:
+            except Exception as e:
+                logger.error(f"Failed to fetch all products: {e}")
                 return []

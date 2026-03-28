@@ -2,11 +2,11 @@ import logging
 import time
 import uuid
 from datetime import datetime
+from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from PIL import Image
 
-from ...dependencies import get_db
 from ...models.detection import DetectionProduct, DetectionResult, UnknownItem, ScanJob
 from ...models.product import ProductData
 from ...websocket import ws_manager
@@ -75,6 +75,225 @@ async def _fail_job(db, job_id, error_message: str):
         }}
     )
     await ws_manager.broadcast("job_status_update", {"job_id": str(job_id), "status": "failed", "error": error_message})
+
+
+async def _load_and_preprocess_image(image_path: str, camera_id: str) -> tuple[bytes, Image.Image]:
+    """Load image file and return raw bytes and PIL Image."""
+    try:
+        with open(image_path, "rb") as f:
+            image_data = f.read()
+        image = Image.open(image_path)
+        return image_data, image
+    except (FileNotFoundError, OSError) as e:
+        logger.error(f"Failed to read image {image_path}: {e}")
+        await ws_manager.broadcast(
+            "scan_error",
+            {"camera_id": camera_id, "error": f"Image read failed: {e}"},
+        )
+        raise
+
+
+async def _detect_and_match_products(
+    image_data: bytes,
+    image: Image.Image,
+    repo: ProductRepository,
+) -> list[MatchedProduct]:
+    """Detect barcodes, decode them, and match to products."""
+    try:
+        barcodes = await detect_barcodes(image_data)
+        if not barcodes:
+            logger.info("No barcodes detected or Gemini API limit reached.")
+            return []
+    except Exception as e:
+        logger.error(f"Barcode detection failed: {e}")
+        raise
+
+    matched_products: list[MatchedProduct] = []
+    for barcode in barcodes:
+        item_code = decode_barcode(barcode.bounding_box, image)
+        if not item_code:
+            continue
+
+        product = await repo.resolve_product(item_code)
+        if not product:
+            product = ProductData(
+                item_code=item_code,
+                barcode_value=item_code,
+                name=f"Product {item_code}",
+                data_source="manual",
+                needs_review=True,
+                current_status="unconfigured",
+            )
+            await repo.upsert_product(product)
+
+        matched_products.append(
+            MatchedProduct(
+                item_code=item_code,
+                name=product.name,
+                description=product.description,
+                barcode_bbox=barcode.bounding_box,
+            )
+        )
+
+    return matched_products
+
+
+async def _detect_product_areas(
+    image_data: bytes,
+    matched_products: list[MatchedProduct],
+    prev_products: list[PreviousProduct],
+    prev_unknowns: list[PreviousUnknown],
+) -> ProductAreasResponse:
+    """Detect product areas using AI with previous detection context."""
+    try:
+        return await detect_product_areas(
+            image_data,
+            matched_products,
+            previous_products=prev_products,
+            previous_unknowns=prev_unknowns,
+        )
+    except Exception as e:
+        logger.error(f"Product area detection failed: {e}")
+        return ProductAreasResponse(product_areas=[], unknown_areas=[])
+
+
+async def _evaluate_stock_levels(
+    matched_products: list[MatchedProduct],
+    product_area_map: dict[str, Any],
+    image: Image.Image,
+    repo: ProductRepository,
+) -> list[DetectionProduct]:
+    """Evaluate stock levels for all matched products."""
+    detection_products: list[DetectionProduct] = []
+
+    for matched in matched_products:
+        product = await repo.get_product(matched.item_code) or ProductData(
+            item_code=matched.item_code,
+            barcode_value=matched.item_code,
+            name=matched.name,
+            description=matched.description,
+        )
+
+        area_bbox = product_area_map.get(matched.item_code, matched.barcode_bbox)
+
+        if product.is_configured:
+            try:
+                crop_data = crop_bbox(image, area_bbox)
+                evaluation = await evaluate_stock_level(
+                    image_data=crop_data,
+                    name=product.name,
+                    description=product.description,
+                    running_out_condition=product.running_out_condition,
+                )
+                status = "running_out" if evaluation.is_running_out else "in_stock"
+                reasoning = evaluation.reasoning
+            except Exception as e:
+                logger.error(f"Stock evaluation failed for {matched.item_code}: {e}")
+                status = "in_stock"
+                reasoning = f"Stock evaluation failed: {e}"
+        else:
+            status = "unconfigured"
+            reasoning = "Product not yet configured for stock monitoring"
+
+        detection_products.append(
+            DetectionProduct(
+                item_code=matched.item_code,
+                name=product.name,
+                barcode_bounding_box=matched.barcode_bbox,
+                product_area_bounding_box=area_bbox,
+                status=status,
+                ai_reasoning=reasoning,
+                running_out_condition=product.running_out_condition or "",
+            )
+        )
+
+    return detection_products
+
+
+async def _process_unknown_items(
+    areas: ProductAreasResponse,
+    prev_unknowns: list[PreviousUnknown],
+) -> list[UnknownItem]:
+    """Process unknown items and assign stable IDs based on previous detection."""
+    prev_unknown_map = {u.assigned_id: u for u in prev_unknowns}
+    current_unknown_ids: set[str] = set()
+
+    unknown_items: list[UnknownItem] = []
+    for unknown in areas.unknown_areas:
+        matched_id = unknown.matched_previous_id
+        if matched_id and matched_id in prev_unknown_map:
+            assigned_id = matched_id
+        else:
+            assigned_id = _generate_unknown_id()
+
+        current_unknown_ids.add(assigned_id)
+        name = unknown.generated_name or f"Unknown: {unknown.description[:40]}"
+
+        unknown_items.append(
+            UnknownItem(
+                bounding_box=unknown.bounding_box,
+                description=unknown.description,
+                assigned_id=assigned_id,
+                generated_name=name,
+            )
+        )
+
+    return unknown_items
+
+
+async def _save_detection_result(
+    detection_id: str,
+    job_id: Any,
+    camera_id: str,
+    image_path: str,
+    detection_products: list[DetectionProduct],
+    unknown_items: list[UnknownItem],
+    start_time: float,
+    db: AsyncIOMotorDatabase,
+) -> None:
+    """Save detection result and mark job as completed."""
+    processing_time = (time.time() - start_time) * 1000
+
+    result = DetectionResult(
+        camera_id=camera_id,
+        image_path=image_path.split("/")[-1],
+        products=detection_products,
+        unknown_items=unknown_items,
+        processing_time_ms=processing_time,
+    )
+
+    result_doc = result.model_dump()
+    insert_result = await db.detections.insert_one(result_doc)
+
+    total_running_out = sum(
+        1 for p in detection_products if p.status == "running_out"
+    )
+
+    await ws_manager.broadcast(
+        "scan_completed",
+        {
+            "detection_id": detection_id,
+            "summary": {
+                "total": len(detection_products),
+                "running_out": total_running_out,
+                "unknown": len(unknown_items),
+            },
+        },
+    )
+
+    await db.pipeline_jobs.update_one(
+        {"_id": job_id},
+        {"$set": {
+            "status": "completed",
+            "completed_at": datetime.utcnow(),
+            "detection_id": detection_id
+        }}
+    )
+    await ws_manager.broadcast(
+        "job_status_update",
+        {"job_id": str(job_id), "status": "completed"}
+    )
+
 
 async def run_detection_pipeline(
     image_path: str,
@@ -333,12 +552,119 @@ async def run_detection_pipeline(
         )
         await ws_manager.broadcast("job_status_update", {"job_id": str(job_id), "status": "completed"})
 
+    except Exception as e:
+        logger.error(f"Pipeline failed: {e}")
+        await _fail_job(db, job_id, str(e))
+        raise
+
+    finally:
+        pass
+
+async def run_detection_pipeline(
+    image_path: str,
+    camera_id: str = "camera-1",
+    *,
+    repo: ProductRepository,
+    db: AsyncIOMotorDatabase,
+) -> str:
+    start_time = time.time()
+
+    await ws_manager.broadcast("scan_started", {"camera_id": camera_id})
+
+    job = ScanJob(
+        camera_id=camera_id,
+        status="running",
+        started_at=datetime.utcnow()
+    )
+    job_result = await db.pipeline_jobs.insert_one(job.model_dump())
+    job_id = job_result.inserted_id
+
+    try:
+        image_data, image = await _load_and_preprocess_image(image_path, camera_id)
+
+        prev_products, prev_unknowns = await _load_previous_detection(db)
+
+        matched_products = await _detect_and_match_products(image_data, image, repo)
+
+        areas = await _detect_product_areas(
+            image_data, matched_products, prev_products, prev_unknowns
+        )
+
+        product_area_map = {
+            pa.item_code: pa.bounding_box for pa in areas.product_areas
+        }
+
+        detection_products = await _evaluate_stock_levels(
+            matched_products, product_area_map, image, repo
+        )
+
+        unknown_items = await _process_unknown_items(areas, prev_unknowns)
+
+        current_unknown_ids = {u.assigned_id for u in unknown_items}
+        previous_unknown_ids = {u.assigned_id for u in prev_unknowns}
+        disappeared_ids = previous_unknown_ids - current_unknown_ids
+        if disappeared_ids:
+            removed = await repo.delete_products(list(disappeared_ids))
+            if removed:
+                logger.info(
+                    f"Removed {removed} disappeared unknown product(s): {disappeared_ids}"
+                )
+
+        result = DetectionResult(
+            camera_id=camera_id,
+            image_path=image_path.split("/")[-1],
+            products=detection_products,
+            unknown_items=unknown_items,
+            processing_time_ms=(time.time() - start_time) * 1000,
+        )
+
+        result_doc = result.model_dump()
+        insert_result = await db.detections.insert_one(result_doc)
+        detection_id = str(insert_result.inserted_id)
+
+        await _save_detection_result(
+            detection_id, job_id, camera_id, image_path,
+            detection_products, unknown_items, start_time, db
+        )
+
+        try:
+            from ..ordering.service import check_and_create_orders
+            await check_and_create_orders(db)
+        except Exception as e:
+            logger.error(f"Post-scan order check failed: {e}")
+
         return detection_id
 
     except Exception as e:
         logger.error(f"Pipeline failed: {e}")
         await _fail_job(db, job_id, str(e))
         raise
+
+    finally:
+        await db.pipeline_jobs.update_one(
+            {"_id": job_id},
+            {"$set": {
+                "status": "completed",
+                "completed_at": datetime.utcnow(),
+                "detection_id": result_doc.get("_id", job_id)
+            }}
+        )
+        await ws_manager.broadcast("job_status_update", {"job_id": str(job_id), "status": "completed"})
+
+
+    return detection_id
+
+async def run_detection_pipeline(
+    image_path: str,
+    camera_id: str = "camera-1",
+    *,
+    repo: ProductRepository,
+    db: AsyncIOMotorDatabase,
+) -> str:
+    # ...
+    return "dummy"
+
+
 
 async def run_scan(camera_id: str = "camera-1"):
     await ws_manager.broadcast("scan_started", {"camera_id": camera_id})

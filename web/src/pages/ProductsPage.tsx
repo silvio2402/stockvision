@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useProducts } from "../hooks/useProducts";
 import { Button, Input, Textarea } from "../components/layout/ui";
-import { Search, Package, Edit2, Check, X, AlertCircle } from "lucide-react";
+import { Package, Edit2, Check, X, AlertCircle } from "lucide-react";
 import { cn } from "../lib/utils";
-
-const defaultStatus = { color: "bg-gray-100 text-gray-700", label: "Unknown" };
+import { statusConfig } from "../lib/statusConfig";
+import { FilterTabs } from "../components/products/FilterTabs";
+import { SearchBar } from "../components/products/SearchBar";
 
 export function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,7 +32,7 @@ export function ProductsPage() {
     return true;
   });
 
-  const handleSave = async (itemCode: string, data: any) => {
+  const handleSave = async (itemCode: string, data: Record<string, unknown>) => {
     setIsSaving(true);
     try {
       const { apiClient } = await import("../api/client");
@@ -50,14 +51,6 @@ export function ProductsPage() {
     setEditingProduct(null);
   };
 
-  const statusConfig: Record<string, { color: string; label: string }> = {
-    in_stock: { color: "bg-green-100 text-green-700", label: "In Stock" },
-    running_out: { color: "bg-red-100 text-red-700", label: "Running Out" },
-    unconfigured: { color: "bg-amber-100 text-amber-700", label: "Unconfigured" },
-    unknown: { color: "bg-gray-100 text-gray-700", label: "Unknown" },
-    not_detected: { color: "bg-gray-100 text-gray-700", label: "Not Detected" },
-  };
-
 
 
   if (isLoading) {
@@ -67,22 +60,7 @@ export function ProductsPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex space-x-2">
-          {(["all", "configured", "unconfigured", "unknown"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setFilterTab(tab)}
-              className={cn(
-                "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-                filterTab === tab
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
-              )}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
+        <FilterTabs filterTab={filterTab} setFilterTab={setFilterTab} />
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -94,59 +72,42 @@ export function ProductsPage() {
         </label>
       </div>
 
-      <div className="bg-white rounded-lg border">
-        <div className="px-6 py-4 border-b">
-          <div className="flex items-center gap-2">
-            <Search className="h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 outline-none"
-            />
-          </div>
-        </div>
+      <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
-        <div className="divide-y max-h-[calc(100vh-300px)] overflow-y-auto">
-          {filteredProducts && filteredProducts.length > 0 ? (
-            filteredProducts.map((product) =>
-              editingProduct === product.item_code ? (
-                <ProductEditForm
-                  key={product.item_code}
-                  product={product}
-                  onSave={handleSave}
-                  onCancel={handleCancel}
-                  isSaving={isSaving}
-                />
-              ) : (
-                <ProductRow
-                  key={product.item_code}
-                  product={product}
-                  onEdit={() => setEditingProduct(product.item_code)}
-                  statusConfig={statusConfig}
-                />
-              )
+        {filteredProducts && filteredProducts.length > 0 ? (
+          filteredProducts.map((product) =>
+            editingProduct === product.item_code ? (
+              <ProductEditForm
+                key={product.item_code}
+                product={product}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                isSaving={isSaving}
+              />
+            ) : (
+              <ProductRow
+                key={product.item_code}
+                product={product}
+                onEdit={() => setEditingProduct(product.item_code)}
+              />
             )
-          ) : (
-            <div className="px-6 py-12 text-center text-gray-500">
-              <Package className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-              <p>No products found</p>
-            </div>
-          )}
-        </div>
+          )
+        ) : (
+          <div className="px-6 py-12 text-center text-gray-500">
+            <Package className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+            <p>No products found</p>
+          </div>
+        )}
       </div>
-    </div>
-  );
-}
+    );
+  }
 
 interface ProductRowProps {
-  product: any;
+  product: Record<string, unknown>;
   onEdit: () => void;
-  statusConfig: Record<string, { color: string; label: string }>;
 }
 
-function ProductRow({ product, onEdit, statusConfig }: ProductRowProps) {
+function ProductRow({ product, onEdit }: { product: any; onEdit: () => void }) {
   const isUnknown = product.data_source === "unknown";
   const subtitle = isUnknown ? product.generated_name : product.item_code;
 
@@ -174,15 +135,15 @@ function ProductRow({ product, onEdit, statusConfig }: ProductRowProps) {
               {!isUnknown && product.barcode_value && (
                 <div className="text-xs text-gray-400 mt-0.5">Barcode: {product.barcode_value}</div>
               )}
-            </div>
-            <span
-              className={cn(
-                "px-2 py-1 rounded-full text-xs font-medium",
-                (statusConfig[product.current_status] ?? defaultStatus).color
-              )}
-            >
-              {(statusConfig[product.current_status] ?? defaultStatus).label}
-            </span>
+</div>
+<span
+               className={cn(
+                 "px-2 py-1 rounded-full text-xs font-medium",
+                 statusConfig[product.current_status as keyof typeof statusConfig]?.color || "bg-gray-100 text-gray-700"
+               )}
+             >
+               {statusConfig[product.current_status as keyof typeof statusConfig]?.label || "Unknown"}
+             </span>
           </div>
 
           {product.running_out_condition && (
@@ -211,13 +172,13 @@ function ProductRow({ product, onEdit, statusConfig }: ProductRowProps) {
 }
 
 interface ProductEditFormProps {
-  product: any;
-  onSave: (itemCode: string, data: any) => void;
+  product: Record<string, unknown>;
+  onSave: (itemCode: string, data: Record<string, unknown>) => void;
   onCancel: () => void;
   isSaving: boolean;
 }
 
-function ProductEditForm({ product, onSave, onCancel, isSaving }: ProductEditFormProps) {
+function ProductEditForm({ product, onSave, onCancel, isSaving }: { product: any; onSave: any; onCancel: any; isSaving: boolean }) {
   const [formData, setFormData] = useState({
     running_out_condition: product.running_out_condition || "",
     order_amount: product.order_amount || "",

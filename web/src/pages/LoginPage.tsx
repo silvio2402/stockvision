@@ -2,7 +2,6 @@ import React from "react";
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "../api/client";
 import { Lock } from "lucide-react";
 import { Input, Button } from "../components/layout/ui";
 

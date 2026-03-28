@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../api/client";
-import { DetectionResult } from "../types";
+import { REFRESH_MS, SCAN_JOBS_REFRESH_MS } from "../lib/constants";
 
 export function useLatestDetection() {
   return useQuery({
     queryKey: ["detection", "latest"],
     queryFn: () => apiClient.getLatestDetection(),
-    refetchInterval: 30000,
+    refetchInterval: REFRESH_MS,
   });
 }
 
@@ -29,7 +29,7 @@ export function useScanJobs(limit = 5) {
   return useQuery({
     queryKey: ["scanJobs", limit],
     queryFn: () => apiClient.getScanJobs(limit),
-    refetchInterval: 5000,
+    refetchInterval: SCAN_JOBS_REFRESH_MS,
   });
 }
 

@@ -1,22 +1,9 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Box, LayoutDashboard, Camera, Package, ClipboardCheck, Settings, Bug, LogOut } from "lucide-react";
+import { Box, LogOut } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSettings } from "../../hooks/useSettings";
-
-interface NavItem {
-  path: string;
-  icon: React.ElementType;
-  label: string;
-}
-
-const navItems: NavItem[] = [
-  { path: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/products", icon: Package, label: "Products" },
-  { path: "/orders", icon: ClipboardCheck, label: "Orders" },
-  { path: "/settings", icon: Settings, label: "Settings" },
-  { path: "/insights", icon: Bug, label: "Insights" },
-];
+import { navItems, type NavItem } from "../../lib/nav";
 
 export function Sidebar() {
   const location = useLocation();

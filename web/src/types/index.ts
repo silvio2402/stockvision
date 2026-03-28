@@ -92,6 +92,7 @@ export interface AppSettings {
   smtp_host: string;
   smtp_port: number;
   smtp_user: string;
+  smtp_password?: string;
   gemini_models: {
     barcode_detection: string;
     product_area_detection: string;
@@ -103,7 +104,4 @@ export interface AuthResponse {
   token: string;
 }
 
-export interface WebSocketMessage<T = any> {
-  type: string;
-  data: T;
-}
+

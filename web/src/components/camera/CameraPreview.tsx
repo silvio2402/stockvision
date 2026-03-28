@@ -2,6 +2,7 @@ import React from "react";
 import { Camera, Video, RefreshCw } from "lucide-react";
 import { useCamera } from "../../hooks/useCamera";
 import { useTriggerScan } from "../../hooks/useDetections";
+import { CAMERA_ID } from "../../lib/constants";
 import { Button } from "../layout/ui";
 
 interface CameraPreviewProps {
@@ -29,7 +30,7 @@ export function CameraPreview({ videoRef }: CameraPreviewProps) {
   };
 
   const handleScan = () => {
-    triggerScan.mutate("camera-1");
+    triggerScan.mutate(CAMERA_ID);
   };
 
   return (
