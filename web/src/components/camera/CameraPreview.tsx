@@ -47,7 +47,7 @@ export function CameraPreview({ videoRef }: CameraPreviewProps) {
           <Button 
             onClick={handleScan} 
             disabled={triggerScan.isPending}
-            className="shadow-lg backdrop-blur-md bg-white/90 border-white/20 text-gray-900 hover:bg-white"
+            className="shadow-lg bg-blue-600 hover:bg-blue-700 text-white border-none"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
             {triggerScan.isPending ? "Scanning..." : "Scan Now"}
