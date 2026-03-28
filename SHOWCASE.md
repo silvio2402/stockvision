@@ -72,6 +72,7 @@ StockVision separates the camera capture from the processing backend, allowing f
 
 ## ![alt text](image-3.png)
 
+**Image of the camera setup pointing to the products:**
 ![alt text](image-6.png)
 
 ## Configuration & Developer Tools
