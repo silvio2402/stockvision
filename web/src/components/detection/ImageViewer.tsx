@@ -58,11 +58,7 @@ export function ImageViewer() {
         <h3 className="text-lg font-semibold">Latest Shelf Image</h3>
         <span className="text-sm text-gray-500">
           Last scan:{' '}
-          {formatRelativeTime(
-            new Date(detection.timestamp + 'Z').toLocaleString('en-US', {
-              timeZone: 'Europe/Berlin',
-            }),
-          )}
+          {formatRelativeTime(detection.timestamp)}
         </span>
       </div>
 

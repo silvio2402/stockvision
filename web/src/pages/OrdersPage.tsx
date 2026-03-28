@@ -3,7 +3,7 @@ import { useOrders, useApproveOrder, useDeclineOrder } from "../hooks/useOrders"
 import { Button } from "../components/layout/ui";
 import { ClipboardCheck, CheckCircle, XCircle, Clock, Circle } from "lucide-react";
 import { OrderStatus } from "../types";
-import { cn } from "../lib/utils";
+import { cn, formatDate } from "../lib/utils";
 
 export function OrdersPage() {
   const { data: orders, isLoading } = useOrders();
@@ -156,7 +156,7 @@ function OrderCard({ order, statusConfig, onApprove, onDecline, showActions }: O
             <div>
               <div className="font-semibold text-gray-900">Order #{order.id.slice(-6)}</div>
               <div className="text-sm text-gray-600">
-                {new Date(order.created_at).toLocaleString()}
+                {formatDate(order.created_at)}
               </div>
             </div>
             <span className={cn("px-3 py-1 rounded-full text-xs font-medium", statusInfo.color)}>

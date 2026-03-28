@@ -5,13 +5,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function parseDate(date: string | Date): Date {
+  if (date instanceof Date) return date;
+  // If string is an ISO date-time without timezone, append 'Z' to treat as UTC
+  if (typeof date === "string" && !date.endsWith("Z") && date.includes("T")) {
+    return new Date(date + "Z");
+  }
+  return new Date(date);
+}
+
 export function formatDate(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = parseDate(date);
   return d.toLocaleString();
 }
 
 export function formatRelativeTime(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = parseDate(date);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMins = Math.floor(diffMs / 60000);
