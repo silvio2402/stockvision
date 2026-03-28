@@ -37,7 +37,7 @@ Adaptable inventory management and supplier ordering.
 ![alt text](image-5.png)
 
 ## 📷 Flexible Camera Setup
-Zero proprietary hardware required. 
+Webcam or phone recommended.
 - **Browser-Based Client**: Turn any phone or tablet into a camera node using the built-in web client (`useCamera.ts`).
 - **QR Pairing**: Scan the QR code in Settings to instantly link a mobile device as a remote camera.
 - **Multi-Camera Scalability**: API-driven capture (`/api/camera/capture`) with `camera_id` support for infinite camera nodes.
