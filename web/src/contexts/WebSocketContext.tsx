@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { WebSocketMessage } from "../types";
 
 interface WebSocketContextType {
@@ -15,15 +16,26 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
   const wsRef = React.useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = React.useRef<number>();
+  const queryClient = useQueryClient();
 
   const handleMessage = useCallback((event: MessageEvent) => {
     try {
       const message: WebSocketMessage = JSON.parse(event.data);
       setLastMessage(message);
+
+      if (message.type === "scan_completed") {
+        queryClient.invalidateQueries({ queryKey: ["detections"] });
+        queryClient.invalidateQueries({ queryKey: ["detection", "latest"] });
+        queryClient.invalidateQueries({ queryKey: ["products"] });
+      } else if (message.type === "product_updated") {
+        queryClient.invalidateQueries({ queryKey: ["products"] });
+      } else if (message.type === "order_created") {
+        queryClient.invalidateQueries({ queryKey: ["orders"] });
+      }
     } catch (e) {
       console.error("Failed to parse WebSocket message:", e);
     }
-  }, []);
+  }, [queryClient]);
 
   const connect = useCallback((token: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
