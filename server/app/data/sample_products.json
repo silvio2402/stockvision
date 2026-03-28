@@ -1,0 +1,50 @@
+[
+  {
+    "item_code": "TONY001",
+    "barcode_value": "TONY001",
+    "name": "El Tony Mate",
+    "description": "El Tony Mate Eistee Dose",
+    "running_out_condition": "Less than 3 cans visible on the shelf",
+    "order_amount": 24
+  },
+  {
+    "item_code": "BOST001",
+    "barcode_value": "BOST001",
+    "name": "Bostich Refill",
+    "description": "Bostich Heftklammern Nachfuellpackung",
+    "running_out_condition": "Less than 2 packs visible",
+    "order_amount": 10
+  },
+  {
+    "item_code": "SCHK001",
+    "barcode_value": "SCHK001",
+    "name": "Schokolade",
+    "description": "Schokoladentafel gross",
+    "running_out_condition": "Less than 3 bars visible on the shelf",
+    "order_amount": 12
+  },
+  {
+    "item_code": "DYMO001",
+    "barcode_value": "DYMO001",
+    "name": "Dymo Papier",
+    "description": "Dymo Etikettenpapier Rollen",
+    "running_out_condition": "Less than 2 rolls visible",
+    "order_amount": 6
+  },
+  {
+    "item_code": "KSCH001",
+    "barcode_value": "KSCH001",
+    "name": "Kleine Schokolade",
+    "description": "Kleine Schokoladenriegel",
+    "running_out_condition": "Less than 5 pieces visible on the shelf",
+    "order_amount": 30
+  },
+  {
+    "item_code": "PFEF001",
+    "barcode_value": "PFEF001",
+    "name": "Pfefferminz Bonbons",
+    "description": "Pfefferminz Bonbons Packung",
+    "running_out_condition": "Less than 3 packs visible",
+    "order_amount": 15
+  }
+]

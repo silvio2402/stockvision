@@ -1,13 +1,12 @@
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 
 from ..config import settings
-from ..dependencies import get_current_user
+from ..dependencies import get_current_user, get_db
 from ..services.detection.pipeline import run_detection_pipeline
 
 router = APIRouter(prefix="/api/camera", tags=["camera"])
@@ -15,9 +14,11 @@ router = APIRouter(prefix="/api/camera", tags=["camera"])
 
 @router.post("/capture")
 async def capture_image(
+    request: Request,
     image: Annotated[UploadFile, File()],
     camera_id: Annotated[str, Form()] = "camera-1",
     user: str = Depends(get_current_user),
+    db=Depends(get_db),
 ):
     storage_path = Path(settings.image_storage_path)
     storage_path.mkdir(parents=True, exist_ok=True)
@@ -32,7 +33,10 @@ async def capture_image(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save image: {e}")
 
-    detection_id = await run_detection_pipeline(str(file_path), camera_id)
+    repo = request.app.state.product_repo
+    detection_id = await run_detection_pipeline(
+        str(file_path), camera_id, repo=repo, db=db
+    )
 
     return {"detection_id": detection_id, "image_path": filename}
 
@@ -43,5 +47,5 @@ async def trigger_scan(
     user: str = Depends(get_current_user),
 ):
     from ..services.detection.pipeline import run_scan
-    
+
     return await run_scan(camera_id)

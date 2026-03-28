@@ -8,9 +8,10 @@ from .product import BoundingBox
 
 class DetectionProduct(BaseModel):
     item_code: str
+    name: str = ""
     barcode_bounding_box: BoundingBox
     product_area_bounding_box: BoundingBox
-    status: Literal["in_stock", "running_out"]
+    status: Literal["in_stock", "running_out", "unconfigured"]
     ai_reasoning: str
     running_out_condition: str
 
@@ -18,6 +19,8 @@ class DetectionProduct(BaseModel):
 class UnknownItem(BaseModel):
     bounding_box: BoundingBox
     description: str
+    assigned_id: str = ""
+    generated_name: str = ""
 
 
 class DetectionResult(BaseModel):
