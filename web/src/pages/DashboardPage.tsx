@@ -24,11 +24,14 @@ export function DashboardPage() {
 
   const runningOutCount = products?.length || 0;
   const totalCount = allProducts?.length || 0;
+  const unconfiguredCount = allProducts?.filter(p => p.current_status === "unconfigured").length || 0;
+  const inStockCount = allProducts?.filter(p => p.current_status === "in_stock").length || 0;
 
   const statusConfig: Record<ProductStatus, { color: string; label: string }> = {
     in_stock: { color: "bg-green-100 text-green-700", label: "In Stock" },
     running_out: { color: "bg-red-100 text-red-700", label: "Running Out" },
-    unknown: { color: "bg-amber-100 text-amber-700", label: "Unknown" },
+    unconfigured: { color: "bg-amber-100 text-amber-700", label: "Unconfigured" },
+    unknown: { color: "bg-gray-100 text-gray-700", label: "Unknown" },
     not_detected: { color: "bg-gray-100 text-gray-700", label: "Not Detected" },
   };
 
@@ -52,7 +55,7 @@ export function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-5">
         <div className="bg-white p-6 rounded-lg border">
           <div className="text-3xl font-bold text-gray-900">{totalCount}</div>
           <div className="text-sm text-gray-600 mt-1">Total Products</div>
@@ -62,8 +65,12 @@ export function DashboardPage() {
           <div className="text-sm text-gray-600 mt-1">Running Out</div>
         </div>
         <div className="bg-white p-6 rounded-lg border">
+          <div className="text-3xl font-bold text-amber-600">{unconfiguredCount}</div>
+          <div className="text-sm text-gray-600 mt-1">Unconfigured</div>
+        </div>
+        <div className="bg-white p-6 rounded-lg border">
           <div className="text-3xl font-bold text-green-600">
-            {totalCount - runningOutCount}
+            {inStockCount}
           </div>
           <div className="text-sm text-gray-600 mt-1">In Stock</div>
         </div>

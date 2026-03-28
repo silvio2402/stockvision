@@ -5,7 +5,7 @@ export type BoundingBox = {
   xmax: number;
 };
 
-export type ProductStatus = "in_stock" | "running_out" | "unknown" | "not_detected";
+export type ProductStatus = "in_stock" | "running_out" | "unconfigured" | "unknown" | "not_detected";
 
 export type OrderStatus = "pending_approval" | "approved" | "declined" | "ordered";
 
@@ -13,7 +13,11 @@ export interface Product {
   item_code: string;
   name: string;
   description?: string | null;
-  barcode_value: string;
+  barcode_value?: string | null;
+  data_source?: "erp" | "sample" | "manual" | "unknown" | null;
+  main_supplier?: string | null;
+  generated_name?: string | null;
+  is_configured: boolean;
   running_out_condition?: string | null;
   order_amount?: number | null;
   current_status: ProductStatus;
@@ -27,14 +31,17 @@ export interface Product {
 
 export interface DetectionProduct {
   item_code: string;
+  name: string;
   barcode_bounding_box: BoundingBox;
   product_area_bounding_box: BoundingBox;
-  status: "in_stock" | "running_out";
+  status: "in_stock" | "running_out" | "unconfigured";
   ai_reasoning: string;
   running_out_condition: string;
 }
 
 export interface UnknownItem {
+  assigned_id: string;
+  generated_name: string;
   bounding_box: BoundingBox;
   description: string;
 }

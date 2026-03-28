@@ -261,10 +261,12 @@ export function DebugPage() {
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
                         product.status === "in_stock"
                           ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
+                          : product.status === "running_out"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-amber-100 text-amber-700"
                       }`}
                     >
-                      {product.status === "in_stock" ? "In Stock" : "Running Out"}
+                      {product.status === "in_stock" ? "In Stock" : product.status === "running_out" ? "Running Out" : "Unconfigured"}
                     </span>
                   </div>
                   

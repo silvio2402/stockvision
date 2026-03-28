@@ -6,7 +6,7 @@ const GEMINI_COORD_SPACE = 1000;
 export interface BoxItem {
   bbox: BoundingBox;
   label: string;
-  status?: "in_stock" | "running_out" | "unknown";
+  status?: "in_stock" | "running_out" | "unconfigured" | "unknown";
   color?: string;
   strokeStyle?: "solid" | "dashed" | "dotted";
 }
@@ -65,7 +65,8 @@ export function BoundingBoxOverlay({
         const statusColors: Record<string, string> = {
           in_stock: "#10b981",
           running_out: "#ef4444",
-          unknown: "#f59e0b",
+          unconfigured: "#f59e0b",
+          unknown: "#6b7280",
         };
         const strokeColor = color ?? statusColors[status || "in_stock"];
 

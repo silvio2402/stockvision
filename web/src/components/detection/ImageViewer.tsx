@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useLatestDetection } from '../../hooks/useDetections';
 import { formatRelativeTime } from '../../lib/utils';
 import { BoundingBox } from '../../types';
-import { BoundingBoxOverlay } from './BoundingBoxOverlay';
+import { BoundingBoxOverlay, BoxItem } from './BoundingBoxOverlay';
 
 export function ImageViewer() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -44,11 +44,19 @@ export function ImageViewer() {
     );
   }
 
-  const boxes = detection.products.map((p) => ({
-    bbox: p.product_area_bounding_box,
-    label: p.item_code,
-    status: p.status as 'in_stock' | 'running_out',
-  }));
+  const boxes: BoxItem[] = [
+    ...detection.products.map((p) => ({
+      bbox: p.product_area_bounding_box,
+      label: p.name || p.item_code,
+      status: p.status as "in_stock" | "running_out" | "unconfigured",
+    })),
+    ...detection.unknown_items.map((u) => ({
+      bbox: u.bounding_box,
+      label: u.generated_name || u.description,
+      status: "unknown" as const,
+      strokeStyle: "dashed" as const,
+    })),
+  ];
 
   const imageUrl = `/api/images/${detection.image_path}`;
 
@@ -86,7 +94,7 @@ export function ImageViewer() {
           }}
         />
 
-        {detection.products.length > 0 && imageNaturalSize.width > 0 && (
+        {boxes.length > 0 && imageNaturalSize.width > 0 && (
           <BoundingBoxOverlay
             boundingBoxes={boxes}
             imageNaturalWidth={imageNaturalSize.width}
@@ -99,7 +107,7 @@ export function ImageViewer() {
 
       <div className="flex items-center gap-6 text-sm">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-green-500" />
+          <div className="w-3 h-3 rounded-full bg-emerald-500" />
           <span className="text-gray-600">In Stock</span>
         </div>
         <div className="flex items-center gap-2">
@@ -108,6 +116,10 @@ export function ImageViewer() {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-amber-500" />
+          <span className="text-gray-600">Unconfigured</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-gray-500" />
           <span className="text-gray-600">Unknown</span>
         </div>
       </div>
