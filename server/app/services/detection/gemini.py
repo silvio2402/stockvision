@@ -23,8 +23,8 @@ class ProductArea(BaseModel):
 class UnknownArea(BaseModel):
     bounding_box: BoundingBox
     description: str
-    matched_previous_id: str = ""
-    generated_name: str = ""
+    matched_previous_id: str | None
+    generated_name: str | None
 
 
 class ProductAreasResponse(BaseModel):
