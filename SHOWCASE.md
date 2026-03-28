@@ -12,7 +12,7 @@ Monitor warehouse health at a glance.
 - **Stock Health**: Color-coded status chips highlight critical items (*Running Out*, *In Stock*).
 - **Actionable Alerts**: 1-click banners for pending order approvals.
 
-![alt text](image.png)
+![alt text](screenshots/image.png)
 
 ## 🧠 AI-Powered Intelligence
 Eliminate manual stock counting with visual AI.
@@ -21,9 +21,9 @@ Eliminate manual stock counting with visual AI.
 - **Natural Language Rules**: Define low-stock triggers in plain English (e.g., *"Less than 5 boxes left"* or *"Neon green bottom is visible"*).
 - **Contextual Evaluation**: AI compares the cropped product image against the language rule to determine stock status, returning a confidence score and reasoning.
 
-![alt text](image-1.png)
+![alt text](screenshots/image-1.png)
 
-![alt text](image-2.png)
+![alt text](screenshots/image-2.png)
 
 ## 📦 Stock & Reorder Workflows
 Adaptable inventory management and supplier ordering.
@@ -34,7 +34,7 @@ Adaptable inventory management and supplier ordering.
   - *Manual (Default)*: AI flags low stock → Creates "Pending" order → Manager approves via UI.
   - *Fully Automated*: AI flags low stock → Auto-generates order → Dispatches SMTP email to supplier.
 
-![alt text](image-5.png)
+![alt text](screenshots/image-5.png)
 
 ## 📷 Flexible Camera Setup
 Webcam or phone recommended.
@@ -43,28 +43,28 @@ Webcam or phone recommended.
 - **Multi-Camera Scalability**: API-driven capture (`/api/camera/capture`) with `camera_id` support for infinite camera nodes.
 - **Automated Scanning**: Schedulers trigger periodic image captures (e.g., every 10 min), syncing the UI instantly via WebSockets.
 
-![alt text](image-3.png)
+![alt text](screenshots/image-3.png)
 
 **Image of the camera setup pointing to the products:**
-![alt text](image-6.png)
+![alt text](screenshots/image-6.png)
 
 ## 🛠️ Developer Tools & Configuration
 Built for deep debugging and customization.
 - **Insights & Logs**: Toggle dev mode to reveal raw AI reasoning, the Insights Console, and pipeline execution logs.
 - **Granular Settings**: Adjust scan cadence, email SMTP configurations, and select specific Gemini models via the UI.
 
-![alt text](image-4.png)
+![alt text](screenshots/image-4.png)
 
 ## 📱 Mobile-First Design
 Manage the warehouse directly from the floor.
 - **Touch-Optimized**: Fully responsive UI designed for smartphones and tablets.
 - **Remote Capture**: The web-based camera client runs flawlessly on mobile browsers without app installations.
 
-![alt text](image-7.png)
+![alt text](screenshots/image-7.png)
 
 ## 🔒 Security & Authentication
 Protecting your inventory data.
 - **Secure Access**: Simple, password-protected login with JWT-based session management.
 - **Safe Configuration**: API credentials and secrets are strictly managed through environment variables.
 
-![alt text](image-8.png)
+![alt text](screenshots/image-8.png)
