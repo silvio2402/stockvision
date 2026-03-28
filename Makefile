@@ -4,7 +4,7 @@ PIP  := $(VENV)/bin/pip
 # Find a compatible Python (3.14 is too new for pinned deps)
 PYTHON := $(shell command -v python3.12 2>/dev/null || command -v python3.13 2>/dev/null || command -v python3.11 2>/dev/null || echo python3)
 
-.PHONY: setup dev dev-db dev-server dev-web stop clean prod prod-down
+.PHONY: setup dev dev-db dev-server dev-web stop clean prod prod-down test-e2e
 
 ## ── First-time setup (also runs automatically via make dev) ──────
 
@@ -49,6 +49,10 @@ dev-server: $(VENV)/.installed
 # Vite dev server with HMR — proxies /api and /ws to localhost:8000
 dev-web: web/node_modules/.installed
 	cd web && npm run dev
+
+# Run end-to-end detection pipeline tests
+test-e2e: $(VENV)/.installed
+	PYTHONPATH=. $(VENV)/bin/pytest tests/test_pipeline_e2e.py
 
 ## ── Lifecycle ────────────────────────────────────────────────────
 

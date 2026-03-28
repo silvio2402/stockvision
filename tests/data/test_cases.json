@@ -1,0 +1,62 @@
+[
+  {
+    "image_file": "PXL_20260328_063709879.RAW-01.jpg",
+    "test_name": "full_shelf",
+    "products": [
+      {"item_code": "TONY001", "status": "in_stock"},
+      {"item_code": "BOST001", "status": "in_stock"},
+      {"item_code": "SCHK001", "status": "in_stock"},
+      {"item_code": "DYMO001", "status": "in_stock"},
+      {"item_code": "KSCH001", "status": "in_stock"},
+      {"item_code": "PFEF001", "status": "in_stock"}
+    ]
+  },
+  {
+    "image_file": "PXL_20260328_064021603.RAW-01.jpg",
+    "test_name": "mixed_shelf_running_out",
+    "products": [
+      {"item_code": "TONY001", "status": "running_out"},
+      {"item_code": "BOST001", "status": "running_out"},
+      {"item_code": "SCHK001", "status": "in_stock"},
+      {"item_code": "DYMO001", "status": "running_out"},
+      {"item_code": "KSCH001", "status": "running_out"},
+      {"item_code": "PFEF001", "status": "running_out"}
+    ]
+  },
+  {
+    "image_file": "PXL_20260328_064150918.RAW-01.jpg",
+    "test_name": "with_unknown_tape_dispenser",
+    "products": [
+      {"item_code": "TONY001", "status": "running_out"},
+      {"item_code": "BOST001", "status": "running_out"},
+      {"item_code": "SCHK001", "status": "in_stock"},
+      {"item_code": "DYMO001", "status": "running_out"},
+      {"item_code": "KSCH001", "status": "running_out"},
+      {"item_code": "PFEF001", "status": "running_out"}
+    ]
+  },
+  {
+    "image_file": "PXL_20260328_064205940.RAW-01.jpg",
+    "test_name": "out_of_stock_ksch001",
+    "products": [
+      {"item_code": "TONY001", "status": "running_out"},
+      {"item_code": "BOST001", "status": "running_out"},
+      {"item_code": "SCHK001", "status": "in_stock"},
+      {"item_code": "DYMO001", "status": "running_out"},
+      {"item_code": "KSCH001", "status": "running_out"},
+      {"item_code": "PFEF001", "status": "running_out"}
+    ]
+  },
+  {
+    "image_file": "PXL_20260328_064312443.RAW-01.jpg",
+    "test_name": "out_of_stock_pfef001",
+    "products": [
+      {"item_code": "TONY001", "status": "running_out"},
+      {"item_code": "BOST001", "status": "running_out"},
+      {"item_code": "SCHK001", "status": "in_stock"},
+      {"item_code": "DYMO001", "status": "in_stock"},
+      {"item_code": "KSCH001", "status": "in_stock"},
+      {"item_code": "PFEF001", "status": "running_out"}
+    ]
+  }
+]

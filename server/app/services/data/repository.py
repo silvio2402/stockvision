@@ -53,6 +53,30 @@ class ProductRepository:
 
         return None
 
+    async def refresh_product(self, item_code: str) -> ProductData | None:
+        """Fetch latest from sources and update if found, otherwise return existing."""
+        existing = await self.get_product(item_code)
+        
+        for source in self.sources:
+            ext = await source.get_product(item_code)
+            if not ext:
+                ext = await source.search_by_barcode(item_code)
+            
+            if ext:
+                if not existing:
+                    return await self._create_from_external(ext, source.source_name)
+                
+                existing.name = ext.name
+                existing.description = ext.description or existing.description
+                existing.main_supplier = ext.main_supplier or existing.main_supplier
+                existing.running_out_condition = ext.running_out_condition or existing.running_out_condition
+                existing.order_amount = ext.order_amount or existing.order_amount
+                existing.updated_at = datetime.utcnow()
+                await self.upsert_product(existing)
+                return existing
+        
+        return existing
+
     async def _create_from_external(
         self, ext: ExternalProductData, source_name: str
     ) -> ProductData:
