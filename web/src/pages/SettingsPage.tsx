@@ -39,23 +39,20 @@ export function SettingsPage() {
   const currentSettings = { ...settings, ...formData };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-end">
-        <div className="flex items-center gap-2">
-          {hasChanges && (
-            <>
-              <Button variant="secondary" onClick={handleReset} disabled={updateSettings.isPending}>
-                <RotateCcw className="h-4 w-4 mr-1" />
-                Reset
-              </Button>
-              <Button onClick={handleSave} disabled={updateSettings.isPending}>
-                <Save className="h-4 w-4 mr-1" />
-                {updateSettings.isPending ? "Saving..." : "Save Changes"}
-              </Button>
-            </>
-          )}
+    <div className="p-6 space-y-6 pb-24 relative">
+      {hasChanges && (
+        <div className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white px-6 py-4 rounded-full shadow-[0_0_40px_rgba(0,0,0,0.1)] border border-gray-200 animate-in slide-in-from-bottom-10 fade-in duration-300">
+          <span className="text-sm font-medium text-gray-700 mr-2 hidden md:inline-block">Unsaved changes</span>
+          <Button variant="secondary" onClick={handleReset} disabled={updateSettings.isPending} className="rounded-full px-5">
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset
+          </Button>
+          <Button onClick={handleSave} disabled={updateSettings.isPending} className="rounded-full px-6 shadow-md hover:shadow-lg transition-shadow">
+            <Save className="h-4 w-4 mr-2" />
+            {updateSettings.isPending ? "Saving..." : "Save Changes"}
+          </Button>
         </div>
-      </div>
+      )}
 
       <SettingsCard
         title="Camera Access"
