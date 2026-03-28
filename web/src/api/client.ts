@@ -1,4 +1,4 @@
-import { Product, DetectionResult, Order, AppSettings, AuthResponse } from "../types";
+import { Product, DetectionResult, Order, AppSettings, AuthResponse, ScanJob } from "../types";
 
 class ApiClient {
   private token: string | null = null;
@@ -114,6 +114,10 @@ class ApiClient {
 
   async getDetection(id: string): Promise<DetectionResult> {
     return this.request<DetectionResult>(`/api/detections/${id}`);
+  }
+
+  async getScanJobs(limit: number = 5): Promise<ScanJob[]> {
+    return this.request<ScanJob[]>(`/api/detections/jobs?limit=${limit}`);
   }
 
   async getOrders(status?: string): Promise<Order[]> {

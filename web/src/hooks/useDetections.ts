@@ -25,12 +25,21 @@ export function useDetections(limit = 20, offset = 0) {
   });
 }
 
+export function useScanJobs(limit = 5) {
+  return useQuery({
+    queryKey: ["scanJobs", limit],
+    queryFn: () => apiClient.getScanJobs(limit),
+    refetchInterval: 5000,
+  });
+}
+
 export function useTriggerScan() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: (cameraId?: string) => apiClient.triggerScan(cameraId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scanJobs"] });
       queryClient.invalidateQueries({ queryKey: ["detections"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
@@ -44,6 +53,7 @@ export function useCaptureImage() {
     mutationFn: ({ file, cameraId }: { file: File; cameraId?: string }) => 
       apiClient.captureImage(file, cameraId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scanJobs"] });
       queryClient.invalidateQueries({ queryKey: ["detections"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },

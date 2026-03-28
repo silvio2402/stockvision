@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useLatestDetection, useDetections, useDetection, useTriggerScan, useCaptureImage } from "../hooks/useDetections";
+import { useLatestDetection, useDetections, useDetection, useTriggerScan, useCaptureImage, useScanJobs } from "../hooks/useDetections";
 import { BoundingBoxOverlay, BoxItem } from "../components/detection/BoundingBoxOverlay";
-import { DetectionResult, DetectionProduct, UnknownItem, BoundingBox } from "../types";
+import { DetectionResult, DetectionProduct, UnknownItem, BoundingBox, ScanJob } from "../types";
 import { Button } from "../components/layout/ui";
 import { formatRelativeTime } from "../lib/utils";
-import { Bug, RefreshCw, Eye, EyeOff, ChevronDown, Clock, Cpu, Upload } from "lucide-react";
+import { Bug, RefreshCw, Eye, EyeOff, ChevronDown, Clock, Cpu, Upload, AlertCircle, CheckCircle2, Activity } from "lucide-react";
 
-export function DebugPage() {
+export function InsightsPage() {
   const [selectedDetectionId, setSelectedDetectionId] = useState<string | null>(null);
   const [showProductAreas, setShowProductAreas] = useState(true);
   const [showBarcodeBoxes, setShowBarcodeBoxes] = useState(true);
@@ -14,12 +14,16 @@ export function DebugPage() {
 
   const { data: latestDetection, isLoading: isLoadingLatest } = useLatestDetection();
   const { data: detectionsList } = useDetections(20);
+  const { data: scanJobs } = useScanJobs(5);
   const { data: selectedDetection, isLoading: isLoadingSelected } = useDetection(selectedDetectionId);
   const triggerScan = useTriggerScan();
   const captureImage = useCaptureImage();
 
   const activeDetection = selectedDetectionId ? selectedDetection : latestDetection;
   const isLoading = selectedDetectionId ? isLoadingSelected : isLoadingLatest;
+
+  const isJobRunning = scanJobs?.some((job: ScanJob) => job.status === "running") || false;
+  const isScanning = triggerScan.isPending || isJobRunning;
 
   const handleScan = () => {
     triggerScan.mutate("camera-1");
@@ -97,7 +101,10 @@ export function DebugPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Bug className="h-6 w-6" /> Insights Console
+        </h1>
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 bg-white border px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors text-sm font-medium">
             <Upload className="h-4 w-4" />
@@ -107,14 +114,58 @@ export function DebugPage() {
               accept="image/*"
               onChange={handleUpload}
               className="hidden"
+              disabled={captureImage.isPending}
             />
           </label>
-          <Button onClick={handleScan} disabled={triggerScan.isPending}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
-            {triggerScan.isPending ? "Scanning..." : "Trigger Scan"}
+          <Button onClick={handleScan} disabled={isScanning}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isScanning ? "animate-spin" : ""}`} />
+            {isScanning ? "Scanning..." : "Trigger Scan"}
           </Button>
         </div>
       </div>
+
+      {scanJobs && scanJobs.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gray-50 px-4 py-3 border-b flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Activity className="h-4 w-4" /> Pipeline Jobs
+            </h3>
+          </div>
+          <div className="divide-y max-h-48 overflow-y-auto">
+            {scanJobs.map((job: ScanJob) => (
+              <div key={job.id} className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {job.status === "running" && <RefreshCw className="h-5 w-5 text-blue-500 animate-spin" />}
+                  {job.status === "completed" && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+                  {job.status === "failed" && <AlertCircle className="h-5 w-5 text-red-500" />}
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 capitalize">
+                      {job.status} {job.camera_id && `(${job.camera_id})`}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Started: {formatRelativeTime(job.started_at)}
+                      {job.completed_at && ` • Ended: ${formatRelativeTime(job.completed_at)}`}
+                    </p>
+                  </div>
+                </div>
+                {job.error_message && (
+                  <div className="text-xs text-red-600 bg-red-50 px-3 py-1 rounded max-w-md truncate" title={job.error_message}>
+                    {job.error_message}
+                  </div>
+                )}
+                {job.detection_id && (
+                  <button 
+                    onClick={() => setSelectedDetectionId(job.detection_id || null)}
+                    className="text-xs font-medium text-blue-600 hover:text-blue-800"
+                  >
+                    View Result
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">

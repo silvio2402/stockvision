@@ -18,7 +18,7 @@ setup: $(VENV)/.installed web/node_modules/.installed
 
 $(VENV)/.installed: server/requirements.txt
 	$(PYTHON) -m venv $(VENV)
-	$(PIP) install -r server/requirements.txt
+	PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 $(PIP) install -r server/requirements.txt
 	@test -f server/.env || cp server/.env.example server/.env
 	@mkdir -p server/data/images
 	@touch $@

@@ -57,6 +57,16 @@ export interface DetectionResult {
   created_at: string;
 }
 
+export interface ScanJob {
+  id: string;
+  camera_id: string;
+  status: "running" | "completed" | "failed";
+  started_at: string;
+  completed_at?: string | null;
+  error_message?: string | null;
+  detection_id?: string | null;
+}
+
 export interface OrderItem {
   item_code: string;
   name: string;
