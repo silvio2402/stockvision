@@ -3,6 +3,7 @@ import { useLatestDetection, useTriggerScan, useScanJobs } from '../../hooks/use
 import { formatRelativeTime } from '../../lib/utils';
 import { BoundingBox } from '../../types';
 import { BoundingBoxOverlay, BoxItem } from './BoundingBoxOverlay';
+import { CAMERA_ID } from '../../lib/constants';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '../layout/ui';
 
@@ -18,7 +19,7 @@ export function ImageViewer() {
   const triggerScan = useTriggerScan();
 
   const handleScan = () => {
-    triggerScan.mutate("camera-1");
+    triggerScan.mutate(CAMERA_ID);
   };
 
   const isJobRunning = scanJobs?.some(job => job.status === "running") || false;

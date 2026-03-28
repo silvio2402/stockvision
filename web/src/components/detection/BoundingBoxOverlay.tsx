@@ -1,7 +1,6 @@
 import React from "react";
 import { BoundingBox } from "../../types";
-
-const GEMINI_COORD_SPACE = 1000;
+import { GEMINI_COORD_SPACE } from "../../lib/constants";
 
 export interface BoxItem {
   bbox: BoundingBox;
@@ -26,6 +25,10 @@ export function BoundingBoxOverlay({
   containerWidth,
   containerHeight,
 }: BoundingBoxOverlayProps) {
+  if (imageNaturalHeight === 0 || containerHeight === 0) {
+    return null;
+  }
+
   const imageAspect = imageNaturalWidth / imageNaturalHeight;
   const containerAspect = containerWidth / containerHeight;
 

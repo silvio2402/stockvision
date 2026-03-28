@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { WebSocketProvider, useWebSocket } from "./contexts/WebSocketContext";
 import { AppShell } from "./components/layout/AppShell";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { CameraPage } from "./pages/CameraPage";
@@ -59,7 +60,8 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <WebSocketProvider>
-            <Routes>
+            <ErrorBoundary>
+              <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route
                 path="*"
@@ -87,6 +89,7 @@ function App() {
                 }
               />
             </Routes>
+            </ErrorBoundary>
           </WebSocketProvider>
         </AuthProvider>
       </BrowserRouter>

@@ -6,7 +6,7 @@ import { useWebSocket } from "../contexts/WebSocketContext";
 import { ImageViewer } from "../components/detection/ImageViewer";
 import { AlertCircle } from "lucide-react";
 import { formatRelativeTime } from "../lib/utils";
-import { ProductStatus } from "../types";
+import { statusConfig } from "../lib/statusConfig";
 
 export function DashboardPage() {
   const { data: detection } = useLatestDetection();
@@ -19,14 +19,6 @@ export function DashboardPage() {
   const totalCount = allProducts?.length || 0;
   const unconfiguredCount = allProducts?.filter(p => p.current_status === "unconfigured").length || 0;
   const inStockCount = allProducts?.filter(p => p.current_status === "in_stock").length || 0;
-
-  const statusConfig: Record<ProductStatus, { color: string; label: string }> = {
-    in_stock: { color: "bg-green-100 text-green-700", label: "In Stock" },
-    running_out: { color: "bg-red-100 text-red-700", label: "Running Out" },
-    unconfigured: { color: "bg-amber-100 text-amber-700", label: "Unconfigured" },
-    unknown: { color: "bg-gray-100 text-gray-700", label: "Unknown" },
-    not_detected: { color: "bg-gray-100 text-gray-700", label: "Not Detected" },
-  };
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
@@ -114,13 +106,5 @@ export function DashboardPage() {
         )}
       </div>
     </div>
-  );
-}
-
-function Link({ to, children, className = "" }: { to: string; children: React.ReactNode; className?: string }) {
-  return (
-    <a href={to} className={className}>
-      {children}
-    </a>
   );
 }

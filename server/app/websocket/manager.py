@@ -27,7 +27,8 @@ class WebSocketManager:
         for ws in self._connections:
             try:
                 await ws.send_text(payload)
-            except Exception:
+            except Exception as e:
+                logger.error(f"Failed to send message to WebSocket: {e}")
                 disconnected.append(ws)
         for ws in disconnected:
             self.disconnect(ws)

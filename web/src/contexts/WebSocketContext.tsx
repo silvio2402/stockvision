@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useEffect, useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { WebSocketMessage } from "../types";
+import { WEBSOCKET_RECONNECT_MS } from "../lib/constants";
+
+export interface WebSocketMessage<T = unknown> {
+  type: string;
+  data: T;
+}
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -68,7 +73,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         if (storedToken) {
           connect(storedToken);
         }
-      }, 5000);
+      }, WEBSOCKET_RECONNECT_MS);
     };
 
     wsRef.current = ws;
