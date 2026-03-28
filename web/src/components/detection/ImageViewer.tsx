@@ -50,7 +50,7 @@ export function ImageViewer() {
         <div className="absolute top-4 right-4 z-10">
           <Button onClick={handleScan} disabled={triggerScan.isPending} className="shadow-md bg-blue-600 text-white hover:bg-blue-700 border-none">
             <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
-            {triggerScan.isPending ? "Scanning..." : "Scan Now"}
+            <span className="hidden sm:inline">{triggerScan.isPending ? "Scanning..." : "Scan Now"}</span>
           </Button>
         </div>
       </div>
@@ -77,17 +77,17 @@ export function ImageViewer() {
 
       <div
         ref={containerRef}
-        className="relative bg-gray-900 rounded-lg overflow-hidden group"
+        className="relative bg-gray-900 rounded-lg overflow-hidden min-h-[300px]"
         style={{ height: '500px' }}
       >
-        <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute top-4 right-4 z-10">
           <Button 
             onClick={handleScan} 
             disabled={triggerScan.isPending}
             className="shadow-lg bg-blue-600 hover:bg-blue-700 text-white border-none"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
-            {triggerScan.isPending ? "Scanning..." : "Scan Now"}
+            <RefreshCw className={`h-4 w-4 sm:mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">{triggerScan.isPending ? "Scanning..." : "Scan Now"}</span>
           </Button>
         </div>
 
@@ -121,17 +121,17 @@ export function ImageViewer() {
         )}
       </div>
 
-      <div className="flex items-center gap-6 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-green-500" />
+      <div className="flex items-center gap-6 text-sm overflow-x-auto pb-2">
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <div className="w-3 h-3 rounded-full bg-green-500 shrink-0" />
           <span className="text-gray-600">In Stock</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-red-500" />
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <div className="w-3 h-3 rounded-full bg-red-500 shrink-0" />
           <span className="text-gray-600">Running Out</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-amber-500" />
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <div className="w-3 h-3 rounded-full bg-amber-500 shrink-0" />
           <span className="text-gray-600">Unknown</span>
         </div>
       </div>

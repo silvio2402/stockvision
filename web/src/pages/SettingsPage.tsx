@@ -39,15 +39,15 @@ export function SettingsPage() {
   const currentSettings = { ...settings, ...formData };
 
   return (
-    <div className="p-6 space-y-6 pb-24 relative">
+    <div className="p-4 sm:p-6 space-y-6 pb-28 md:pb-24 relative">
       {hasChanges && (
-        <div className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white px-6 py-4 rounded-full shadow-[0_0_40px_rgba(0,0,0,0.1)] border border-gray-200 animate-in slide-in-from-bottom-10 fade-in duration-300">
+        <div className="fixed bottom-20 md:bottom-8 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 flex items-center justify-between md:justify-center gap-3 bg-white px-4 md:px-6 py-4 rounded-2xl md:rounded-full shadow-[0_-5px_40px_rgba(0,0,0,0.15)] md:shadow-[0_0_40px_rgba(0,0,0,0.1)] border border-gray-200 animate-in slide-in-from-bottom-10 fade-in duration-300">
           <span className="text-sm font-medium text-gray-700 mr-2 hidden md:inline-block">Unsaved changes</span>
-          <Button variant="secondary" onClick={handleReset} disabled={updateSettings.isPending} className="rounded-full px-5">
+          <Button variant="secondary" onClick={handleReset} disabled={updateSettings.isPending} className="rounded-xl md:rounded-full px-4 md:px-5 w-full md:w-auto flex-1 md:flex-none">
             <RotateCcw className="h-4 w-4 mr-2" />
             Reset
           </Button>
-          <Button onClick={handleSave} disabled={updateSettings.isPending} className="rounded-full px-6 shadow-md hover:shadow-lg transition-shadow">
+          <Button onClick={handleSave} disabled={updateSettings.isPending} className="rounded-xl md:rounded-full px-4 md:px-6 shadow-md hover:shadow-lg transition-shadow w-full md:w-auto flex-1 md:flex-none">
             <Save className="h-4 w-4 mr-2" />
             {updateSettings.isPending ? "Saving..." : "Save Changes"}
           </Button>
@@ -109,12 +109,12 @@ export function SettingsPage() {
         icon={<SettingsIcon className="h-5 w-5" />}
       >
         <div className="space-y-4">
-          <label className="flex items-center gap-3">
+          <label className="flex items-start gap-3">
             <input
               type="checkbox"
               checked={currentSettings.approval_required}
               onChange={(e) => handleChange("approval_required", e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
             />
             <div>
               <div className="font-medium text-gray-900">Require approval before sending orders</div>
@@ -225,12 +225,12 @@ export function SettingsPage() {
         icon={<Bug className="h-5 w-5" />}
       >
         <div className="space-y-4">
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={currentSettings.developer_mode}
               onChange={(e) => handleChange("developer_mode", e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
             />
             <div>
               <div className="font-medium text-gray-900">Developer Mode</div>
@@ -254,13 +254,13 @@ interface SettingsCardProps {
 function SettingsCard({ title, icon, children }: SettingsCardProps) {
   return (
     <div className="bg-white rounded-lg border">
-      <div className="px-6 py-4 border-b bg-gray-50">
+      <div className="px-4 sm:px-6 py-4 border-b bg-gray-50">
         <div className="flex items-center gap-2">
           <div className="text-gray-500">{icon}</div>
           <h2 className="text-lg font-semibold">{title}</h2>
         </div>
       </div>
-      <div className="p-6">{children}</div>
+      <div className="p-4 sm:p-6">{children}</div>
     </div>
   );
 }
