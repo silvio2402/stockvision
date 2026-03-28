@@ -1,6 +1,7 @@
 import React from "react";
-import { Camera, Video } from "lucide-react";
+import { Camera, Video, RefreshCw } from "lucide-react";
 import { useCamera } from "../../hooks/useCamera";
+import { useTriggerScan } from "../../hooks/useDetections";
 import { Button } from "../layout/ui";
 
 interface CameraPreviewProps {
@@ -10,6 +11,7 @@ interface CameraPreviewProps {
 export function CameraPreview({ videoRef }: CameraPreviewProps) {
   const { startCamera, stopCamera } = useCamera(videoRef);
   const [isActive, setIsActive] = React.useState(false);
+  const triggerScan = useTriggerScan();
 
   const handleToggleCamera = async () => {
     if (isActive) {
@@ -26,6 +28,10 @@ export function CameraPreview({ videoRef }: CameraPreviewProps) {
     }
   };
 
+  const handleScan = () => {
+    triggerScan.mutate("camera-1");
+  };
+
   return (
     <div className="w-full h-full relative bg-gray-100 flex items-center justify-center overflow-hidden">
       <video
@@ -35,6 +41,19 @@ export function CameraPreview({ videoRef }: CameraPreviewProps) {
         muted
         className={`w-full h-full object-cover ${!isActive ? 'hidden' : ''}`}
       />
+      
+      {isActive && (
+        <div className="absolute top-4 right-4 z-40">
+          <Button 
+            onClick={handleScan} 
+            disabled={triggerScan.isPending}
+            className="shadow-lg backdrop-blur-md bg-white/90 border-white/20 text-gray-900 hover:bg-white"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
+            {triggerScan.isPending ? "Scanning..." : "Scan Now"}
+          </Button>
+        </div>
+      )}
       
       {!isActive && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-30">
