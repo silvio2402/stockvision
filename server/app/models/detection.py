@@ -34,3 +34,14 @@ class DetectionResult(BaseModel):
 
 class DetectionResultInDB(DetectionResult):
     id: str = ""
+
+class ScanJob(BaseModel):
+    camera_id: str = "camera-1"
+    status: Literal["running", "completed", "failed"]
+    started_at: datetime = Field(default_factory=datetime.utcnow)
+    completed_at: datetime | None = None
+    error_message: str | None = None
+    detection_id: str | None = None
+
+class ScanJobInDB(ScanJob):
+    id: str = ""

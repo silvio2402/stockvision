@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..dependencies import get_current_user, get_db
-from ..models.detection import DetectionResultInDB
+from ..models.detection import DetectionResultInDB, ScanJobInDB
 
 router = APIRouter(prefix="/api/detections", tags=["detections"])
 
@@ -22,6 +22,20 @@ async def list_detections(
         doc["id"] = str(doc.get("_id", ""))
         detections.append(DetectionResultInDB(**doc))
     return detections
+
+
+@router.get("/jobs", response_model=list[ScanJobInDB])
+async def list_jobs(
+    limit: int = Query(5, ge=1, le=50),
+    user: str = Depends(get_current_user),
+    db = Depends(get_db),
+):
+    cursor = db.pipeline_jobs.find().sort("started_at", -1).limit(limit)
+    jobs = []
+    async for doc in cursor:
+        doc["id"] = str(doc.get("_id", ""))
+        jobs.append(ScanJobInDB(**doc))
+    return jobs
 
 
 @router.get("/latest", response_model=DetectionResultInDB)
