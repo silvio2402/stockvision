@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 import { useSettings, useUpdateSettings } from "../hooks/useSettings";
 import { Button, Input, Textarea } from "../components/layout/ui";
-import { Settings as SettingsIcon, Save, RotateCcw, Bug } from "lucide-react";
+import { Settings as SettingsIcon, Save, RotateCcw, Bug, Camera } from "lucide-react";
 import { cn } from "../lib/utils";
 
 export function SettingsPage() {
@@ -54,6 +56,38 @@ export function SettingsPage() {
           )}
         </div>
       </div>
+
+      <SettingsCard
+        title="Camera Access"
+        icon={<Camera className="h-5 w-5" />}
+      >
+        <div className="flex flex-col items-center space-y-6 py-4">
+          <div className="text-center space-y-2">
+            <p className="text-gray-900 font-medium">Scan to open on your phone</p>
+            <p className="text-sm text-gray-500 max-w-sm">
+              Use your phone's camera to scan this QR code and access the scanner directly.
+            </p>
+          </div>
+          
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <QRCodeSVG 
+              value={`${window.location.origin}/camera`} 
+              size={200}
+              level="H"
+              includeMargin={true}
+            />
+          </div>
+
+          <div className="flex items-center gap-4 w-full max-w-sm pt-4 border-t border-gray-100">
+            <Link to="/camera" className="w-full">
+              <Button className="w-full flex items-center justify-center gap-2">
+                <Camera className="h-4 w-4" />
+                Open Camera on this device
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </SettingsCard>
 
       <SettingsCard
         title="Scan Configuration"

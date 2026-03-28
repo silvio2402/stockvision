@@ -68,14 +68,6 @@ export function Sidebar() {
             <LogOut className="h-4 w-4" />
             <span>Log out</span>
           </button>
-          
-          <Link
-            to="/camera"
-            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Open Camera"
-          >
-            <Camera className="h-4 w-4" />
-          </Link>
         </div>
       </div>
     </aside>

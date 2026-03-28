@@ -12,7 +12,6 @@ interface NavItem {
 const navItems: NavItem[] = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/products", icon: Package, label: "Products" },
-  { path: "/camera", icon: Camera, label: "Camera" },
   { path: "/orders", icon: ClipboardCheck, label: "Orders" },
   { path: "/settings", icon: Settings, label: "Settings" },
   { path: "/debug", icon: Bug, label: "Debug" },

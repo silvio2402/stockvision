@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Box, LayoutDashboard, User, Camera, Package, ClipboardCheck, Settings, Bug, LogOut } from "lucide-react";
+import { Box, LayoutDashboard, User, Package, ClipboardCheck, Settings, Bug, LogOut } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { cn } from "../../lib/utils";
 
@@ -12,7 +12,6 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/camera", icon: Camera, label: "Camera" },
   { path: "/products", icon: Package, label: "Products" },
   { path: "/orders", icon: ClipboardCheck, label: "Orders" },
   { path: "/settings", icon: Settings, label: "Settings" },
