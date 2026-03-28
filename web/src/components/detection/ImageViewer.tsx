@@ -1,8 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { useLatestDetection } from '../../hooks/useDetections';
+import { useLatestDetection, useTriggerScan } from '../../hooks/useDetections';
 import { formatRelativeTime } from '../../lib/utils';
 import { BoundingBox } from '../../types';
 import { BoundingBoxOverlay } from './BoundingBoxOverlay';
+import { RefreshCw } from 'lucide-react';
+import { Button } from '../layout/ui';
 
 export function ImageViewer() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -12,6 +14,11 @@ export function ImageViewer() {
     height: 0,
   });
   const { data: detection, isLoading, error } = useLatestDetection();
+  const triggerScan = useTriggerScan();
+
+  const handleScan = () => {
+    triggerScan.mutate("camera-1");
+  };
 
   useEffect(() => {
     const updateSize = () => {
@@ -38,8 +45,14 @@ export function ImageViewer() {
 
   if (error || !detection) {
     return (
-      <div className="bg-gray-100 rounded-lg aspect-video flex items-center justify-center">
+      <div className="bg-gray-100 rounded-lg aspect-video flex items-center justify-center relative">
         <div className="text-gray-500">No Detection Data Available</div>
+        <div className="absolute top-4 right-4 z-10">
+          <Button onClick={handleScan} disabled={triggerScan.isPending} className="shadow-md bg-blue-600 text-white hover:bg-blue-700 border-none">
+            <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
+            {triggerScan.isPending ? "Scanning..." : "Scan Now"}
+          </Button>
+        </div>
       </div>
     );
   }
@@ -64,9 +77,20 @@ export function ImageViewer() {
 
       <div
         ref={containerRef}
-        className="relative bg-gray-900 rounded-lg overflow-hidden"
+        className="relative bg-gray-900 rounded-lg overflow-hidden group"
         style={{ height: '500px' }}
       >
+        <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Button 
+            onClick={handleScan} 
+            disabled={triggerScan.isPending}
+            className="shadow-lg bg-blue-600 hover:bg-blue-700 text-white border-none"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
+            {triggerScan.isPending ? "Scanning..." : "Scan Now"}
+          </Button>
+        </div>
+
         <img
           src={imageUrl}
           alt="Shelf detection"

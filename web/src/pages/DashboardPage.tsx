@@ -2,25 +2,18 @@ import React from "react";
 import { useLatestDetection } from "../hooks/useDetections";
 import { useProducts } from "../hooks/useProducts";
 import { useOrders } from "../hooks/useOrders";
-import { useTriggerScan } from "../hooks/useDetections";
 import { useWebSocket } from "../contexts/WebSocketContext";
 import { ImageViewer } from "../components/detection/ImageViewer";
-import { Button } from "../components/layout/ui";
-import { RefreshCw, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { formatRelativeTime } from "../lib/utils";
-import { ProductStatus, OrderStatus } from "../types";
+import { ProductStatus } from "../types";
 
 export function DashboardPage() {
   const { data: detection } = useLatestDetection();
   const { data: products } = useProducts({ status: "running_out" });
   const { data: allProducts } = useProducts();
   const { data: pendingOrders } = useOrders("pending_approval");
-  const triggerScan = useTriggerScan();
   const { lastMessage } = useWebSocket();
-
-  const handleScan = () => {
-    triggerScan.mutate("camera-1");
-  };
 
   const runningOutCount = products?.length || 0;
   const totalCount = allProducts?.length || 0;
@@ -45,10 +38,6 @@ export function DashboardPage() {
               <span className="font-medium">{pendingOrders.length} orders pending</span>
             </a>
           )}
-          <Button onClick={handleScan} disabled={triggerScan.isPending}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${triggerScan.isPending ? "animate-spin" : ""}`} />
-            {triggerScan.isPending ? "Scanning..." : "Scan Now"}
-          </Button>
         </div>
       </div>
 
