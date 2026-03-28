@@ -83,9 +83,9 @@ export function DebugPage() {
       activeDetection.unknown_items.forEach((u: UnknownItem) => {
         boxes.push({
           bbox: u.bounding_box,
-          label: u.description.length > 30 ? u.description.substring(0, 30) + "..." : u.description,
-          color: "#f59e0b",
-          strokeStyle: "dotted"
+          label: u.generated_name || (u.description.length > 30 ? u.description.substring(0, 30) + "..." : u.description),
+          color: "#6b7280",
+          strokeStyle: "dashed"
         });
       });
     }
@@ -209,6 +209,7 @@ export function DebugPage() {
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-green-500" />
                   <div className="w-3 h-3 rounded-full bg-red-500 -ml-1" />
+                  <div className="w-3 h-3 rounded-full bg-amber-500 -ml-1" />
                   <span className="text-sm text-gray-700">Product Areas</span>
                 </div>
               </label>
@@ -232,7 +233,7 @@ export function DebugPage() {
                   onChange={(e) => setShowUnknownItems(e.target.checked)}
                 />
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-amber-500" />
+                  <div className="w-3 h-3 rounded-full bg-gray-500" />
                   <span className="text-sm text-gray-700">Unknown Items</span>
                 </div>
               </label>
@@ -252,9 +253,9 @@ export function DebugPage() {
                 <div key={idx} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <div className="font-semibold text-gray-900 text-lg">{product.item_code}</div>
+                      <div className="font-semibold text-gray-900 text-lg">{product.name || product.item_code}</div>
                       <div className="text-sm text-gray-500 mt-1">
-                        Condition: {product.running_out_condition}
+                        Code: {product.item_code} | Condition: {product.running_out_condition || "Not set"}
                       </div>
                     </div>
                     <span
@@ -301,8 +302,17 @@ export function DebugPage() {
               <div className="divide-y">
                 {activeDetection.unknown_items.map((item: UnknownItem, idx: number) => (
                   <div key={idx} className="p-6 hover:bg-gray-50 transition-colors">
-                    <div className="text-gray-900 mb-2">{item.description}</div>
-                    <div className="text-sm">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="font-semibold text-gray-900 text-lg">{item.generated_name || "Unknown Item"}</div>
+                        <div className="text-sm text-gray-500 mt-1">ID: {item.assigned_id}</div>
+                      </div>
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                        Unknown
+                      </span>
+                    </div>
+                    <div className="text-gray-700 mb-2 mt-2">{item.description}</div>
+                    <div className="text-sm mt-2">
                       <span className="text-gray-500">Bounding Box: </span>
                       <span className="font-mono text-gray-700">{formatBBox(item.bounding_box)}</span>
                     </div>
