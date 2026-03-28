@@ -1,6 +1,7 @@
 import React from "react";
-import { Camera, Video, VideoOff } from "lucide-react";
+import { Camera, Video } from "lucide-react";
 import { useCamera } from "../../hooks/useCamera";
+import { Button } from "../layout/ui";
 
 interface CameraPreviewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -26,32 +27,32 @@ export function CameraPreview({ videoRef }: CameraPreviewProps) {
   };
 
   return (
-    <div className="w-full h-full relative group">
+    <div className="w-full h-full relative bg-gray-100 flex items-center justify-center overflow-hidden">
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        className="w-full h-full object-cover"
+        className={`w-full h-full object-cover ${!isActive ? 'hidden' : ''}`}
       />
       
       {!isActive && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-30 transition-all duration-500">
-          <div className="flex flex-col items-center gap-6 p-8 rounded-3xl border border-white/10 bg-white/5">
-            <div className="w-20 h-20 rounded-full bg-blue-600/20 flex items-center justify-center border border-blue-500/30">
-              <Camera className="h-10 w-10 text-blue-400" />
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-30">
+          <div className="flex flex-col items-center gap-4 p-6 text-center max-w-sm">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm">
+              <Camera className="h-8 w-8 text-gray-400" />
             </div>
-            <div className="text-center">
-              <div className="text-white text-xl font-medium mb-1 tracking-tight">System Monitor Offline</div>
-              <p className="text-white/40 text-sm">Please initialize the camera feed</p>
+            <div>
+              <div className="text-gray-900 text-lg font-medium mb-1">Camera is off</div>
+              <p className="text-gray-500 text-sm">Please allow camera access to take a photo of the shelf.</p>
             </div>
-            <button
+            <Button
               onClick={handleToggleCamera}
-              className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-900/40 flex items-center gap-2"
+              className="mt-2 shadow-sm"
             >
-              <Video className="h-5 w-5" />
-              Initialize Live Feed
-            </button>
+              <Video className="h-4 w-4" />
+              Turn on Camera
+            </Button>
           </div>
         </div>
       )}

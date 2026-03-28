@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Camera, X, RefreshCw } from "lucide-react";
+import { Camera, X, RefreshCw, CheckCircle2, Image as ImageIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CameraPreview } from "../components/camera/CameraPreview";
 import { useCaptureImage } from "../hooks/useDetections";
@@ -19,86 +19,100 @@ export function CameraPage() {
 
       const result = await captureImage.mutateAsync({ file });
       setLastCapture(result.image_path);
-      
-      // Auto-hide the capture after 3 seconds if needed, or keep it visible
     } catch (error) {
       console.error("Capture failed:", error);
-      alert("Failed to capture image");
+      alert("Failed to capture image. Please make sure the camera is turned on.");
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center overflow-hidden">
-      {/* Header / Controls */}
-      <div className="absolute top-0 inset-x-0 p-6 flex items-center justify-between z-20 bg-gradient-to-b from-black/80 to-transparent">
+    <div className="fixed inset-0 bg-gray-50 z-50 flex flex-col md:p-6 overflow-hidden">
+      <div className="flex items-center justify-between p-4 md:p-0 md:mb-6 bg-white md:bg-transparent border-b border-gray-200 md:border-none shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center border border-blue-200">
+            <Camera className="h-5 w-5 text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">Take Photo</h1>
+            <p className="text-sm text-gray-500 hidden md:block">Capture shelf images for analysis</p>
+          </div>
+        </div>
         <Link
           to="/"
-          className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all duration-200"
+          className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
         >
-          <X className="h-10 w-10" />
+          <X className="h-6 w-6" />
         </Link>
-        <div className="flex flex-col items-end">
-          <div className="text-white/40 text-xs font-mono tracking-widest uppercase mb-1">Live Monitor</div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-white/80 text-sm font-medium">CAM-01 ACTIVE</span>
-          </div>
-        </div>
       </div>
 
-      {/* Main Viewport */}
-      <div className="w-full h-full relative group">
-        <CameraPreview videoRef={videoRef} />
+      <div className="flex-1 relative flex flex-col md:flex-row gap-6 max-w-6xl mx-auto w-full h-full min-h-0">
         
-        {/* Processing Overlay (if triggered automatically in future) */}
-        {captureImage.isPending && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center text-white space-y-6 z-30 transition-all">
-            <div className="relative">
-              <RefreshCw className="h-16 w-16 animate-spin text-blue-500" />
-              <Camera className="h-6 w-6 absolute inset-0 m-auto text-white" />
+        <div className="flex-1 relative bg-black md:rounded-2xl overflow-hidden shadow-sm border-y md:border border-gray-200 flex flex-col min-h-0">
+          <CameraPreview videoRef={videoRef} />
+          
+          {captureImage.isPending && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center text-gray-900 space-y-4 z-30">
+              <RefreshCw className="h-10 w-10 animate-spin text-blue-600" />
+              <div className="text-lg font-medium">Analyzing Image...</div>
             </div>
-            <div className="text-2xl font-light tracking-tight text-blue-100">Analyzing Shelf Content...</div>
+          )}
+
+          <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/60 via-black/30 to-transparent flex justify-center pb-8 md:pb-6 z-20">
+            <button
+              onClick={handleCapture}
+              disabled={captureImage.isPending}
+              className="w-16 h-16 rounded-full bg-white/20 border-4 border-white hover:bg-white/40 hover:scale-105 transition-all flex items-center justify-center shadow-lg disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-white/20 group"
+              aria-label="Take Photo"
+            >
+              <div className="w-12 h-12 rounded-full bg-white shadow-sm group-hover:scale-95 transition-transform" />
+            </button>
+          </div>
+        </div>
+
+        {lastCapture && (
+          <div className="absolute md:relative bottom-0 inset-x-0 md:inset-auto md:w-80 bg-white border-t md:border border-gray-200 md:rounded-2xl p-5 shadow-2xl md:shadow-sm flex flex-col gap-4 animate-in slide-in-from-bottom-full md:slide-in-from-right-8 duration-300 z-40 shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-green-600 font-medium">
+                <CheckCircle2 className="h-5 w-5" />
+                <span>Capture Success</span>
+              </div>
+              <button 
+                onClick={() => setLastCapture(null)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 aspect-video flex items-center justify-center">
+              {lastCapture ? (
+                <img
+                  src={`/api/images/${lastCapture}`}
+                  alt="Last capture"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <ImageIcon className="h-8 w-8 text-gray-300" />
+              )}
+            </div>
+            
+            <div className="text-sm text-gray-500">
+              Image has been saved and queued for processing. You can take another photo or return to the dashboard.
+            </div>
+            
+            <div className="flex flex-col gap-2 mt-auto pt-2">
+              <Button variant="secondary" className="w-full" onClick={() => setLastCapture(null)}>
+                Take Another
+              </Button>
+              <Link to="/" className="w-full">
+                <Button variant="primary" className="w-full">
+                  View Dashboard
+                </Button>
+              </Link>
+            </div>
           </div>
         )}
-
-        {/* Framing Guide / Scan Line effect */}
-        <div className="absolute inset-0 pointer-events-none border-[1px] border-white/5 flex items-center justify-center">
-          <div className="w-3/4 h-3/4 border border-white/10 rounded-3xl relative overflow-hidden">
-             {/* Subtle scan line animation */}
-             <div className="absolute inset-x-0 h-[2px] bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.5)] animate-scan" />
-             
-             {/* Corner brackets */}
-             <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/20 rounded-tl-xl" />
-             <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white/20 rounded-tr-xl" />
-             <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white/20 rounded-bl-xl" />
-             <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white/20 rounded-br-xl" />
-          </div>
-        </div>
       </div>
-
-      {/* Bottom Tray (Auto-hides) */}
-      {lastCapture && (
-        <div className="absolute bottom-10 bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-3xl shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-bottom-10 duration-500">
-          <div className="relative group">
-            <img
-              src={`/api/images/${lastCapture}`}
-              alt="Last capture"
-              className="h-20 w-32 object-cover rounded-2xl border border-white/10"
-            />
-            <div className="absolute inset-0 bg-blue-600/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
-          <div className="pr-2">
-            <div className="text-white text-lg font-medium tracking-tight">Detection Successful</div>
-            <div className="text-white/50 text-sm">System updated with latest telemetry</div>
-          </div>
-          <button 
-            onClick={() => setLastCapture(null)}
-            className="p-2 text-white/30 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-all"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-      )}
     </div>
   );
 }
