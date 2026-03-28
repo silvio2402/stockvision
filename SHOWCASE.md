@@ -84,3 +84,23 @@ The Settings page offers deep control over the system's behavior.
 - **Developer Mode**: Toggle advanced developer tools that reveal the Insights Console, raw AI reasoning, and pipeline execution logs.
 
 ![alt text](image-4.png)
+
+## Mobile-Friendly Design
+
+StockVision is fully responsive and optimized for mobile devices.
+
+- **Touch-Optimized UI**: All interfaces are designed with touch interactions in mind, making it easy to navigate and manage inventory from smartphones and tablets.
+- **Mobile Camera Access**: The built-in camera client works seamlessly on mobile browsers, allowing warehouse staff to use their phones as remote capture devices without additional apps.
+- **Responsive Layouts**: Dashboard KPIs, product lists, and settings pages adapt fluidly to any screen size, ensuring a consistent experience across devices.
+
+![alt text](image-7.png)
+
+## Secure Login & Authentication
+
+StockVision protects your warehouse data with secure authentication mechanisms.
+
+- **Password-Protected Access**: Users must enter a password to access the system, ensuring only authorized personnel can view inventory and manage orders.
+- **Session Management**: Secure session handling maintains user authentication state across the application.
+- **Environment-Based Security**: API credentials and sensitive configuration are managed through environment variables, keeping secrets out of the codebase.
+
+![alt text](image-8.png)
